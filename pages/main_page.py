@@ -15,7 +15,7 @@ main_layout = html.Div(
                 fleet_viewer.details
                 ], width=5, class_name='standard-container')
             ]),
-            ], fluid=True)
+            ])
 )
 
 

@@ -19,9 +19,12 @@
 }
 
 .standard-container {
-    height: 80vh;
-    width: 40vw;
-    display: inline-block,
+    margin:5px;
+    background-color: #222222;
+}
+
+.graph-object {
+    width: 100%;
     margin:5px;
     background-color: #222222;
 }

@@ -29,10 +29,8 @@ reward_trend.update_layout(yaxis_range=[min(reward_data['reward']), max(reward_d
                       xaxis_range=[0, max(reward_data['episode_id'])],
                       paper_bgcolor='rgb(0,0,0,0)',
                     plot_bgcolor='rgb(0,0,0,0)',
+                    height=200,
                     margin=dict(l=20, r=10, t=20, b=20),
-                    autosize = False,
-                    #width = 600,
-                     height = 200,
                            yaxis_title=None,
                            xaxis_title=None,
                            xaxis=dict(title_font=dict(size=10),
@@ -46,9 +44,7 @@ reward_trend.update_layout(yaxis_range=[min(reward_data['reward']), max(reward_d
 details = dash_table.DataTable(data.to_dict('records'), [{"name": i, "id": i} for i in data.columns],
                             style_table={'backgroundColor':'rgb(0,0,0,0)',
                                          'overflowX': 'auto',
-                                         'margin': '10px',
-                                         'height':'175px',
-                                         'width':'500px'},
+                                         'height':'175px'},
                             fixed_rows={'headers': True},
                                 style_cell={
                                     'font_size': '8px',
@@ -64,5 +60,5 @@ details = dash_table.DataTable(data.to_dict('records'), [{"name": i, "id": i} fo
 # ------------------------------------------------------------------ #
 # -------------------- Create Dash Components ---------------------- #
 # ------------------------------------------------------------------ #
-fleet_view = dcc.Graph(figure=fleet_map)
-reward_view = dcc.Graph(figure=reward_trend)
+fleet_view = dcc.Graph(figure=fleet_map, className='graph-object')
+reward_view = dcc.Graph(figure=reward_trend, className='graph-object')
