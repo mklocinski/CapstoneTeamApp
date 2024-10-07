@@ -10,7 +10,6 @@ data = pd.read_csv(f"https://docs.google.com/spreadsheets/d/1sFl9BFVxdnqn_vFexMK
                    index_col=0)
 reward_data = pd.read_csv(f"https://docs.google.com/spreadsheets/d/1Wj3qF2QS9H6228AiqBEdZcWD7glf1_rmo0jSqsnu8i0/export?format=csv",
                           index_col=0)
-data = data.head(1000)
 # ------------------------------------------------------------------ #
 # ------------------------ Set Up Map ------------------------------ #
 # ------------------------------------------------------------------ #
