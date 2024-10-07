@@ -20,7 +20,8 @@
 
 .standard-container {
     height: 80vh;
-    width: 80vh;
+    width: 40vw;
+    display: inline-block,
     margin:5px;
     background-color: #222222;
 }
