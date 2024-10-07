@@ -1,0 +1,35 @@
+h1 {
+    color:#ffff;
+}
+
+h3 {
+    color:#ffff;
+    text-transform: uppercase;
+    font-size:14px;
+    font-weight:bold;
+}
+
+h5 {
+    color:#ffff;
+    size:18px;
+    #font-weight:bold;
+
+}
+
+h6 {
+    color:#ffff;
+    size:18px;
+    font-weight:bold;
+
+}
+
+p {
+    color:#ffffff;
+    font-size: 10px;
+}
+
+pre {
+    font: Arial;
+    font-size: 12px;
+}
+
