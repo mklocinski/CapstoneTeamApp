@@ -95,7 +95,7 @@ def create_fleet_viewer(drone_data,
                        customdata = df,
                        marker=dict(size=8, symbol="x-thin",
                                    line=dict(width=1, color="white")),
-                       hovertemplate="<b>Drone %{text}</b><br>X: %{x} <br>Y: %{y}<br>Orientation: %{customdata[5]}<br>Linear Velocity: %{customdata[7]}<br>Angular Velocity: %{customdata[8]}",
+                       hovertemplate="<b>Drone %{text}</b><br>X: %{x} <br>Y: %{y}<br>Orientation: %{customdata[4]}<br>Linear Velocity: %{customdata[6]}<br>Angular Velocity: %{customdata[7]}",
                        name='t=' + str(n))
         ],
             traces=[2],
