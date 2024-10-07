@@ -47,7 +47,8 @@ details = dash_table.DataTable(data.to_dict('records'), [{"name": i, "id": i} fo
                             style_table={'backgroundColor':'rgb(0,0,0,0)',
                                          'overflowX': 'auto',
                                          'margin': '10px',
-                                         'height':'175px'},
+                                         'height':'175px',
+                                         'width':'500px'},
                             fixed_rows={'headers': True},
                                 style_cell={
                                     'font_size': '8px',

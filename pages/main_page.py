@@ -13,9 +13,7 @@ main_layout = html.Div(
             dbc.Col([
                 fleet_viewer.reward_view,
                 fleet_viewer.details
-                ], width=5,  style={'width': '60%',
-                                    'display': 'inline-block',
-                                    'padding': '20px 0px 0px 0px'})
+                ], width=5, class_name='standard-container')
             ]),
             ], fluid=True)
 )
