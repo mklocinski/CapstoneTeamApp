@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 # ---------------------- General Functions ------------------------- #
 # ------------------------------------------------------------------ #
 
-def get_updatemenus(x_pos=0.0, fr_duration=100):
+def get_updatemenus(x_pos=0.0, fr_duration=50):
     return [dict(x=x_pos,
                  y=-0.1,
                  type='buttons',
