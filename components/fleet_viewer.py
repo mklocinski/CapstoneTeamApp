@@ -8,7 +8,7 @@ from utils import make_map, visualizations as viz
 # ------------------------------------------------------------------ #
 data = pd.read_csv(r'pages\tbl_local_state.csv')
 reward_data = pd.read_csv(r'pages\tbl_rewards.csv')
-print(data.head(40))
+data = data.head(1000)
 # ------------------------------------------------------------------ #
 # ------------------------ Set Up Map ------------------------------ #
 # ------------------------------------------------------------------ #
