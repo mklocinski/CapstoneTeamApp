@@ -16,4 +16,4 @@ dash.register_page("Resources", layout=layout, path="/resources", order=4)
     prevent_initial_call=True,
 )
 def func(n_clicks):
-    return dict(filename="tbl_local_state.csv")
+    return dict(filename="../components/tbl_local_state.csv")
