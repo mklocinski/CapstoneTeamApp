@@ -20,31 +20,14 @@ plot_range = [i for i in range(amap.axis_values[0], amap.axis_values[1])]
 # ------------------------------------------------------------------ #
 # ------------------------ Set Up Plots ---------------------------- #
 # ------------------------------------------------------------------ #
-fleet_map = viz.create_fleet_viewer(data,
-                        amap.position_matrix,
-                        plot_range)
+basic_swarm_view = viz.basic_swarm_viewer(data)
+fleet_map = viz.swarm_scatterplot(data)
 
-reward_trend = px.line(reward_data, x='episode_id', y='reward')
-reward_trend.update_layout(yaxis_range=[min(reward_data['reward']), max(reward_data['reward'])],
-                      xaxis_range=[0, max(reward_data['episode_id'])],
-                      paper_bgcolor='rgb(0,0,0,0)',
-                    plot_bgcolor='rgb(0,0,0,0)',
-                    height=200,
-                    margin=dict(l=20, r=10, t=20, b=20),
-                           yaxis_title=None,
-                           xaxis_title=None,
-                           xaxis=dict(title_font=dict(size=10),
-                                      showgrid=False),
-                           yaxis=dict(title_font=dict(size=10),
-                                      showgrid=False),
-                           font=dict(size=10, color='white'),
-                           title='Reward Trends'
-                           )
+reward_trend = viz.reward_trend_viewer(reward_data)
 
 details = dash_table.DataTable(data.to_dict('records'), [{"name": i, "id": i} for i in data.columns],
                             style_table={'backgroundColor':'rgb(0,0,0,0)',
-                                         'overflowX': 'auto',
-                                         'height':'175px'},
+                                         'overflowX': 'auto'},
                             fixed_rows={'headers': True},
                                 style_cell={
                                     'font_size': '8px',
@@ -60,5 +43,5 @@ details = dash_table.DataTable(data.to_dict('records'), [{"name": i, "id": i} fo
 # ------------------------------------------------------------------ #
 # -------------------- Create Dash Components ---------------------- #
 # ------------------------------------------------------------------ #
-fleet_view = dcc.Graph(figure=fleet_map, className='graph-object')
-reward_view = dcc.Graph(figure=reward_trend, className='graph-object')
+swarm_view = dcc.Graph(figure=fleet_map, className="graph-object")
+reward_view = dcc.Graph(figure=reward_trend, className="graph-object")
