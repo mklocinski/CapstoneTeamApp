@@ -11,6 +11,9 @@ import os
 # ------------------------------------------------------------------ #
 # --------------------- Assistant Interaction ---------------------- #
 # ------------------------------------------------------------------ #
+openai_api_key = os.getenv("OPENAI_API_KEY")
+assistant_id = os.getenv("ASSISTANT_ID")
+
 class Assistant:
     def __init__(self, apikey, assistant_id, message_history):
         self.apikey = apikey
@@ -76,7 +79,6 @@ class Assistant:
                 return "No response from assistant."
 
 
-#openai.api_key = text.api
 
 def chat_bubble(participant, message):
     if message:
