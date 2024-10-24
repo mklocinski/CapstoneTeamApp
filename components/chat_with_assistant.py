@@ -166,7 +166,7 @@ def ask_assistant(click, query, messages, dialog_area):
     if click == 0:
         return dialog_area, messages
     else:
-        assistant = Assistant(text.api, text.assistant_id, messages)
+        assistant = Assistant(openai_api_key, assistant_id, messages)
         assistant.initialize_client()
         if messages is None:
             messages = {"messages":[{"role": "system", "content": "hello"}]}
