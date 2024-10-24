@@ -153,7 +153,8 @@ layout = html.Div(
 
 @callback([
             Output(component_id="chat-dialog", component_property="children"),
-            Output(component_id="chat-messages", component_property="data")
+            Output(component_id="chat-messages", component_property="data"),
+            Output(component_id="chat-user-query-box", component_property="value")
            ],
     Input( component_id="chat-user-query-button", component_property="n_clicks"),
     [State(component_id="chat-user-query-box", component_property="value"),
@@ -164,7 +165,7 @@ def ask_assistant(click, query, messages, dialog_area):
     if dialog_area is None:
         dialog_area = []
     if click == 0:
-        return dialog_area, messages
+        return dialog_area, messages, query
     else:
         assistant = Assistant(openai_api_key, assistant_id, messages)
         assistant.initialize_client()
@@ -176,7 +177,7 @@ def ask_assistant(click, query, messages, dialog_area):
         messages["messages"].append({"role": "assistant", "content": assistant_response})
         dialog_area.insert(0, chat_bubble("user", query))
         dialog_area.insert(0, chat_bubble("assistant", assistant_response))
-        return dialog_area, messages
+        return dialog_area, messages, ""
 
 
 

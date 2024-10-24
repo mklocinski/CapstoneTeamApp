@@ -92,6 +92,9 @@ body {
 /* -------------------------------------------------------------------- */
 
 .collapsed-sidebar {
+    display: flex;
+    flex-direction: column;  /* Stack the buttons vertically */
+    justify-content: space-between;
     position: fixed;
     top: 6rem;
     left: 0;
@@ -102,12 +105,12 @@ body {
 }
 
 .collapsed-sidebar .collapsed-sidebar-button {
+
     color: #fffff;
     background-color: #fec036;
     border-color: #fec036;
+    width: 100%;
     margin-top: 15%;
-    margin-right: 15%;
-    margin-left: 15%;
     margin-bottom: 15%;
 }
 
@@ -120,7 +123,7 @@ body {
     color: #fffff;
     background-color: #3d454d;
     border-color: #3d454d;
-    width: 15%;
+    width: 100%;
     margin: 5%;
 }
 
