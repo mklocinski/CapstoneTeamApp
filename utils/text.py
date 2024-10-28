@@ -1,3 +1,5 @@
+import re
+
 app_name = ''
 
 
@@ -40,3 +42,10 @@ about_page_project = "About the project"
 about_page_project_description = "This app was developed for GMU's SYST/OR 699 Capstone course. The project's goal was to integrate Explainable AI (XAI) and Responsible AI (RAI) subsystems with a drone swarm DRL. Specifically, the subsystems will be designed to enhance the functionality of the DeepRL for Swarm Systems (DRLSS) model, which is a model that helps drones learn how to work together, with the goal of increasing its ability to provide explainable output and responsible outcomes. "
 about_page_model = "About the model"
 about_page_model_description = ("This app is running the Deep RL for Drone Swarms codebase written for the paper, 'Deep Reinforcement Learning for Swarm Systems' by M. Hüttenrauch, A. Šošić, and G. Neumann. No changes have been made to the original code. All modifications were applied through wrapper classes. See links below for the authors' paper and GitHub repository.")
+
+# Cleaned error messages
+def error_summary(error_message):
+    main = re.sub(r'(WARNING|INFO):.*\n?', '', error_message)
+    summary = re.findall(r'(Traceback.*|Error.*|Exception.*|TypeError.*)', main, re.DOTALL)
+    error_summary = ";\n".join(summary)
+    return error_summary
