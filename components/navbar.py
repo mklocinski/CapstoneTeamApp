@@ -65,8 +65,6 @@ make_navbar = dbc.Navbar(
                                     dbc.DropdownMenuItem("Home", href="/", id='home-nav', class_name='navlink'),
                                     dbc.DropdownMenuItem("View Data", href="/view-data", id='view-data-nav',
                                                          class_name='navlink'),
-                                    dbc.DropdownMenuItem("Ask Questions", href="/ask-questions", id='ask-questions-nav',
-                                                         class_name='navlink'),
                                     dbc.DropdownMenuItem("About", href="/about", id='about-nav', class_name='navlink'),
                                 ],
                                 nav=True,

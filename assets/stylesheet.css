@@ -50,6 +50,7 @@ body {
 .assistant-chat-area .chat-user-query-area .query-button {
     display: inline-flex;
     margin: 2.5%;
+    padding: 1%;
     background-color: #24496b;
 }
 
@@ -87,6 +88,16 @@ body {
 
 }
 
+.attachment-drop-down {
+    padding: 5%;
+    font-size=0.25em;
+
+}
+
+
+attachment-drop-down-text{
+    font-size=0.25em;
+    }
 /* -------------------------------------------------------------------- */
 /* ------------------- Collapsed Sidebar Elements --------------------- */
 /* -------------------------------------------------------------------- */
@@ -191,6 +202,7 @@ body {
     left: 0;
     background-color: #3b3b3b;
     width: 100%;
+    --bs-navbar-padding-y: 0.15rem;
 }
 
 .nav-tabs .nav-item.show .nav-link {
@@ -271,8 +283,6 @@ body {
     background-color: #3d454d !important;  /* Blue toggle button */
     color: #fff !important;  /* White text */
 }
-
-
 
 
 

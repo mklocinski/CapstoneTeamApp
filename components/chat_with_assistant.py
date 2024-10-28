@@ -1,5 +1,4 @@
-from dash import html, callback, Input, Output, State
-import dash_core_components as dcc
+from dash import html, callback, Input, Output, State, dcc
 import dash_bootstrap_components as dbc
 from utils import text
 from openai import OpenAI, api_key
@@ -123,12 +122,35 @@ about_your_assistant_text = dbc.Popover(
             target="chat-about-assistant",
             trigger="click",
         )
-submit_user_query = dbc.Button(
-                        children=[html.I( className='bi bi-send')],
-                        className="query-button",
-                        id="chat-user-query-button",
-                        n_clicks=0)
+# submit_user_query = dbc.Button(
+#                         children=[html.I( className='bi bi-send')],
+#                         className="query-button",
+#                         id="chat-user-query-button",
+#                         n_clicks=0)
 
+submit_user_query = dbc.DropdownMenu(
+    id="chat-user-query-button",
+    className="m-2",
+    label=html.I( className='bi bi-send'),
+    children=[
+        dcc.Checklist(
+            id="chat-user-attachments",
+            className="attachment-drop-down",
+            labelClassName="attachment-drop-down-text",
+            options=[
+                {'label': 'Local State Data', 'value': 'tbl_local_state'},
+                {'label': 'Global State Data', 'value': 'tbl_global_state'},
+                {'label': 'Reward Data', 'value': 'tbl_rewards'},
+                {'label': 'Drone Action Data', 'value': 'tbl_drone_actions'},
+                {'label': 'Model Run Parameters', 'value': 'tbl_model_run_params'},
+                {'label': 'Model Runs', 'value': 'tbl_model_runs'}
+            ],
+            value=['Local State Data'],
+            labelStyle={'font-size':'0.75em'}
+        )
+    ],
+    align_end=False,
+)
 
 layout = html.Div(
         id='chat-area',
