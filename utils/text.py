@@ -46,6 +46,6 @@ about_page_model_description = ("This app is running the Deep RL for Drone Swarm
 # Cleaned error messages
 def error_summary(error_message):
     main = re.sub(r'(WARNING|INFO):.*\n?', '', error_message)
-    summary = re.findall(r'(Traceback.*|Error.*|Exception.*|TypeError.*)', main, re.DOTALL)
+    summary = re.findall(r'(Traceback.*|Error.*|Exception.*|TypeError.*|RuntimeError.*)', main, re.DOTALL)
     error_summary = ";\n".join(summary)
     return error_summary
