@@ -115,7 +115,7 @@ def run_model(standard_clicked, live_clicked, env_p, mod_p, map_p, rai_p):
 
     # Handle standard run
     if button_id == 'standard-run' and standard_clicked:
-        response = requests.post('http://127.0.0.1:5000/model/live/run_xrai', json=payload)
+        response = requests.post('https://xraiapi-ba66c372be3f.herokuapp.com/model/standard/run_xrai', json=payload)
         if response.status_code == 200:
             success = html.I(id="model-run-success-icon",
                              className="bi bi-check-circle-fill",
@@ -181,7 +181,7 @@ def run_live_model(clicks, env_p, mod_p, map_p, rai_p):
                    "map_parameters": map_p,
                    "rai_parameters": rai_p}
 
-        response = requests.post('http://127.0.0.1:5000/model/live/run_xrai', json=payload)
+        response = requests.post('https://xraiapi-ba66c372be3f.herokuapp.com/model/live/run_xrai', json=payload)
 
         if response.status_code == 200:
             success = html.I(id="model-run-success-icon",
@@ -212,7 +212,7 @@ def run_live_model(clicks, env_p, mod_p, map_p, rai_p):
 def pause_live_model(clicks):
     if clicks:
 
-        response = requests.post('http://127.0.0.1:5000/model/pause')
+        response = requests.post('https://xraiapi-ba66c372be3f.herokuapp.com/model/pause')
 
         if response.status_code == 200:
 
