@@ -57,7 +57,7 @@ dash.register_page("View Data", layout=layout, path="/view-data", order=2)
 )
 def load_table(n_clicks, value):
     if n_clicks > 0 and value:
-        url = f'http://localhost:5000/database/last_run/{value}'
+        url = f'https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/{value}'
         response = requests.get(url)
         if response.status_code == 200:
             print("Data successfully fetched from API")

@@ -31,8 +31,8 @@ tabs = html.Div(
 )
 def tab_content(tab):
     if tab == "tab-2":
-        response1 = requests.get('http://localhost:5000/database/last_run/tbl_local_state')
-        response2 = requests.get('http://localhost:5000/database/last_run/tbl_map_data')
+        response1 = requests.get('https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/tbl_local_state')
+        response2 = requests.get('https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/tbl_map_data')
         if response1.status_code == 200 and response2.status_code == 200:
             data = response1.json()
             df = pd.DataFrame(data)
@@ -47,7 +47,7 @@ def tab_content(tab):
         else:
             return f"Error: {response.content.decode()}"
     elif tab == "tab-1":
-        response = requests.get('http://localhost:5000/database/last_run/tbl_rewards')
+        response = requests.get('https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/tbl_rewards')
         if response.status_code == 200:
             data = response.json()
             df = pd.DataFrame(data)
@@ -55,7 +55,7 @@ def tab_content(tab):
             df.columns = new_cols
             return rewards.reward_view(df)
     elif tab == "tab-3":
-        response = requests.get('http://localhost:5000/database/last_run/tbl_local_state')
+        response = requests.get('https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/tbl_local_state')
         if response.status_code == 200:
             data = response.json()
             df = pd.DataFrame(data)
