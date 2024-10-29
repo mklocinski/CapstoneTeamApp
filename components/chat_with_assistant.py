@@ -5,7 +5,10 @@ from openai import OpenAI, api_key
 import time
 import pickle
 import os
-
+import requests
+import pandas as pd
+import base64
+import io
 
 # ------------------------------------------------------------------ #
 # --------------------- Assistant Interaction ---------------------- #
@@ -128,13 +131,25 @@ about_your_assistant_text = dbc.Popover(
 #                         id="chat-user-query-button",
 #                         n_clicks=0)
 
+
+file_upload = html.Div(
+    id='upload-attachment',
+    className="chat-upload-attachment",
+    children=[dcc.Upload(
+        id='attachment',
+        children=html.Div([
+            html.I( className='bi bi-paperclip'),
+        ]),
+        accept=".csv")]
+)
 submit_user_query = dbc.DropdownMenu(
     id="chat-user-query-button",
     className="m-2",
     label=html.I( className='bi bi-send'),
     children=[
+        html.P("Attach most recent run data:"),
         dcc.Checklist(
-            id="chat-user-attachments",
+            id="chat-option-attachments",
             className="attachment-drop-down",
             labelClassName="attachment-drop-down-text",
             options=[
@@ -147,7 +162,10 @@ submit_user_query = dbc.DropdownMenu(
             ],
             value=['Local State Data'],
             labelStyle={'font-size':'0.75em'}
-        )
+        ),
+    dbc.Button('Submit', id='chat-submit-button', n_clicks=0,
+                               color="secondary", className="me-1",
+                size="sm", style={"margin-left":"50%"})
     ],
     align_end=False,
 )
@@ -160,6 +178,7 @@ layout = html.Div(
                 html.Div(className="chat-user-query-area",
                         children=[
                             user_query_box,
+                            file_upload,
                             submit_user_query
                             ]),
                 html.Div(
@@ -178,17 +197,42 @@ layout = html.Div(
             Output(component_id="chat-messages", component_property="data"),
             Output(component_id="chat-user-query-box", component_property="value")
            ],
-    Input( component_id="chat-user-query-button", component_property="n_clicks"),
+    Input( component_id="chat-submit-button", component_property="n_clicks"),
     [State(component_id="chat-user-query-box", component_property="value"),
+     State(component_id="chat-option-attachments", component_property="value"),
+    State(component_id="attachment", component_property="contents"),
     State(component_id="chat-messages", component_property="data"),
-     State(component_id="chat-dialog", component_property="children")]
+     State(component_id="chat-dialog", component_property="children"),
+     State('api_url', 'data')]
         )
-def ask_assistant(click, query, messages, dialog_area):
+def ask_assistant(click, query, attachments, other_attachments, messages, dialog_area, api_url):
     if dialog_area is None:
         dialog_area = []
     if click == 0:
         return dialog_area, messages, query
     else:
+        print("button clicked")
+        # User-added attachments
+        if other_attachments is not None:
+            type, string = other_attachments.split(',')
+            print(string)
+            decodes = base64.b64decode(string)
+            user_attachs = pd.read_csv(io.StringIO(decodes.decode('utf-8')))
+        print(user_attachs)
+        # Optional attachments
+        api_call = api_url['api_url']
+        attachment_calls = [f'{api_call}/database/last_run/{attach[1]}' for attach in attachments]
+        opt_attachments = []
+        for call in attachment_calls:
+            response = requests.get(call)
+            if response.status_code == 200:
+                print("Data successfully fetched from API")
+                data = response.json()
+                df = pd.DataFrame(data)
+                new_cols = [col[5:] for col in df.columns]
+                df.columns = new_cols
+                opt_attachments.append(df)
+            print(opt_attachments)
         assistant = Assistant(openai_api_key, assistant_id, messages)
         assistant.initialize_client()
         if messages is None:

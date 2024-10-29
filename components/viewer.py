@@ -1,7 +1,7 @@
 from dash import html, callback, Input, Output, State, dcc
 import dash_bootstrap_components as dbc
 from utils import text
-from components import swarm_viewer
+from components import data_viewer
 from components.Visuals import swarm_movements, drone_trajectories, rewards
 import requests
 import pandas as pd
@@ -28,11 +28,15 @@ tabs = html.Div(
 @callback(
     Output("tab-content", "children"),
     [Input("tabs", "active_tab")],
+    State('api_url', 'data')
 )
-def tab_content(tab):
+def tab_content(tab, url):
+    call = url['api_url']
     if tab == "tab-2":
-        response1 = requests.get('https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/tbl_local_state')
-        response2 = requests.get('https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/tbl_map_data')
+        response1 = requests.get(f'{call}/database/last_run/tbl_local_state')
+        response2 = requests.get(f'{call}/database/last_run/tbl_map_data')
+        print(response1.status_code)
+        print(response2.status_code)
         if response1.status_code == 200 and response2.status_code == 200:
             data = response1.json()
             df = pd.DataFrame(data)
@@ -45,9 +49,9 @@ def tab_content(tab):
             map_df.columns = new_cols
             return swarm_movements.swarm_view(df, map_df)
         else:
-            return f"Error: {response.content.decode()}"
+            return f"Error"
     elif tab == "tab-1":
-        response = requests.get('https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/tbl_rewards')
+        response = requests.get(f'{call}/database/last_run/tbl_rewards')
         if response.status_code == 200:
             data = response.json()
             df = pd.DataFrame(data)
@@ -55,7 +59,7 @@ def tab_content(tab):
             df.columns = new_cols
             return rewards.reward_view(df)
     elif tab == "tab-3":
-        response = requests.get('https://xraiapi-ba66c372be3f.herokuapp.com/database/last_run/tbl_local_state')
+        response = requests.get(f'{call}/database/last_run/tbl_local_state')
         if response.status_code == 200:
             data = response.json()
             df = pd.DataFrame(data)

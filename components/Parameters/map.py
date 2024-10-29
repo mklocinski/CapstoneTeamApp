@@ -1,6 +1,7 @@
-from dash import html, callback, Input, Output, State, dcc
+from dash import html, dash, Input, Output, State, callback
 import dash_bootstrap_components as dbc
-from utils import text
+from dash.dependencies import ALL
+from utils import app_utils
 
 
 map_params_submit_button = dbc.Button(
@@ -8,102 +9,15 @@ map_params_submit_button = dbc.Button(
                         id="tools-menu-submit-map-button",
                         className="collapsed-sidebar-submit-button",
                         n_clicks=0)
-# Collisions
-## Basic Collision Avoidance
-map_1 = html.Div(
-                 children=[
-                     html.P("Set number of generic obstacles_1", className="p_dark"),
-                     dbc.Input(id="map_1",
-                               type="number",
-                               min=0,
-                               max=100,
-                               step=1,
-                               placeholder=10)
-                 ])
-map_2 = html.Div(
-                 children=[
-                     html.P("Set number of generic obstacles2:", className="p_dark"),
-                     dbc.Input(id="map_2",
-                               type="number",
-                               min=0,
-                               max=100,
-                               step=1,
-                               placeholder=10)
-                 ])
-map_3 = html.Div(
-                 children=[
-                     html.P("Set number of no-fly zones:", className="p_dark"),
-                     dbc.Input(id="map_3",
-                               type="number",
-                               min=0,
-                               max=100,
-                               step=1,
-                               placeholder=10)
-                 ])
-map_4 = html.Div(
-                 children=[
-                     html.P("Set number of humans:", className="p_dark"),
-                     dbc.Input(id="map_4",
-                               type="number",
-                               min=0,
-                               max=100,
-                               step=1,
-                               placeholder=10)
-                 ])
-map_5 = html.Div(
-                 children=[
-                     html.P("Set number of buildings:", className="p_dark"),
-                     dbc.Input(id="map_5",
-                               type="number",
-                               min=0,
-                               max=100,
-                               step=1,
-                               placeholder=10)
-                 ])
-
-map_6 = html.Div(
-                 children=[
-                     html.P("Set number of trees:", className="p_dark"),
-                     dbc.Input(id="map_6",
-                               type="number",
-                               min=0,
-                               max=100,
-                               step=1,
-                               placeholder=10)
-                 ])
-
-map_7 = html.Div(
-                 children=[
-                     html.P("Set number of animals:", className="p_dark"),
-                     dbc.Input(id="map_7",
-                               type="number",
-                               min=0,
-                               max=100,
-                               step=1,
-                               placeholder=10)
-                 ])
+# Maps
+## Number of obstacles
+elements = app_utils.create_user_inputs("Map")["elements"]
+callback_list = [item for sublist in elements.values() for item in sublist]
+element_values = app_utils.create_user_inputs("Map")["values"]
 
 params = dbc.Accordion(
-        [
-            dbc.AccordionItem(
-                    title="Phase 1",
-                    children=[
-
-                                map_1,
-                                map_2,
-                                map_3,
-                                map_4,
-                                map_5,
-                                map_6,
-                                map_7
-                    ]
-                ),
-            dbc.AccordionItem(title="Phase 2",
-                              children=[
-                              ])
-            ])
-
-
+        [dbc.AccordionItem( title=key,children=val) for key, val in elements.items()]
+    )
 
 menu = html.Div(id="map-menu",
                 children=[
@@ -111,40 +25,24 @@ menu = html.Div(id="map-menu",
                     map_params_submit_button
                 ])
 
-#
-# @callback(
-#     [Output(component_id="map_1", component_property="value"),
-#     Output(component_id="map_2", component_property="value"),
-#     Output(component_id="map_3", component_property="value"),
-#     Output(component_id="map_4", component_property="value"),
-#     Output(component_id="map_5", component_property="value")],
-#     Input(component_id="map_parameters", component_property="data")
-# )
-# def populate_default_map_params(inputs):
-#      map1 = inputs["basic_collision_avoidance"]
-#      map2 = inputs["basic_collision_penalty"]
-#      map3 = inputs["advanced_collision_avoidance"]
-#      map4 = inputs["advanced_collision_penalty"]
-#      map5 = inputs["basic_damage_avoidance"]
-#      return map1, map2, map3, map4, map5
-#
-# @callback(
-#     Output(component_id="map_parameters", component_property="data"),
-#     Input(component_id="tools-menu-submit-map-button", component_property="n_clicks"),
-#     [State(component_id="map_parameters", component_property="data"),
-#      State(component_id="map_1", component_property="value"),
-#      State(component_id="map_2", component_property="value"),
-#      State(component_id="map_3", component_property="value"),
-#      State(component_id="map_4", component_property="value"),
-#      State(component_id="map_5", component_property="value")],
-#            allow_duplicate=True, prevent_initial_call=True
-# )
-# def update_map_parameters(click, parameters, map1, map2, map3, map4, map5):
-#     if click:
-#         parameters["basic_collision_avoidance"] = map1
-#         parameters["basic_collision_penalty"] = map2
-#         parameters["advanced_collision_avoidance"] = map3
-#         parameters["advanced_collision_penalty"] = map4
-#         parameters["basic_damage_avoidance"] = map5
-#
-#     return parameters
+
+#inputs = [Input(component_id=key, component_property="value") for key, val in values.items()]
+input_values = {key:Input(component_id=key, component_property="value") for key, val in element_values.items()}
+
+
+@callback(
+    Output("map_parameters", "data"),
+    Input("tools-menu-submit-map-button", "n_clicks"),
+    State({"type": "param_input", "index": ALL}, "value"),
+    State({"type": "param_input", "index": ALL}, "id"),
+    prevent_initial_call=True
+)
+def update_map_parameters(click, values, ids):
+    if click:
+        # Create a dictionary mapping parameter codes to their user-input values
+        parameters = {id["index"]: value for id, value in zip(ids, values)}
+
+        print(parameters)  # For debugging
+        return parameters  # This will return the parameters dictionary to "map_parameters" data
+    return dash.no_update
+

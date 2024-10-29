@@ -115,7 +115,8 @@ sidebar_layout = html.Div(
 def run_model(n_clicks):
     if n_clicks:
         # Send a POST request to the Flask API
-        response = requests.post('https://xraiapi-ba66c372be3f.herokuapp.com/model/standard/run_xrai')
+        response = requests.post('http://127.0.0.1:5000/model/standard/run_xrai')
+        #response = requests.post('https://xraiapi-ba66c372be3f.herokuapp.com/model/standard/run_xrai')
         if response.status_code == 200:
             data = response.json()
             return f"Model Output: {data['model_output']}"

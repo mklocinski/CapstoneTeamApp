@@ -1,25 +1,14 @@
 import os
-import openai
-
+from utils import app_utils
 
 # Callbacks
 
 # Default Parameters
 model_run_status = {"run-status":"off"}
-map_params = {"obstacle1": 2,
-              "obstacle2": 1,
-              'num_no_fly_zones':3,
-              'num_humans':5,
-              'num_buildings':5,
-              'num_trees':5,
-              'num_animals':5}
 
-rai_params = {"basic_collision_avoidance": True,
-              "basic_collision_penalty": 10,
-              "advanced_collision_avoidance": False,
-               "advanced_collision_penalty": 10,
-               "basic_damage_avoidance": False,
-              "basic_damage_penalty": 10}
+map_params = app_utils.create_user_inputs("Map")["values"]
+
+rai_params = app_utils.create_user_inputs("RAI")["values"]
 
 environment_params = {"environment_id": 'Rendezvous',
                 "nr_agents": 20,

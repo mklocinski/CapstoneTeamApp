@@ -1,61 +1,97 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State
+from dash import html, dcc, callback, Input, Output, State, clientside_callback
 import dash_bootstrap_components as dbc
 from utils import text
 import requests
 
-run_model_button = dbc.Button(
-    children=["Run Model"],
-    className="run-model-button",
-    id="run-model-button")
 
-run_model_dropdown = dbc.DropdownMenu(
-    id="run-model-dropdown",
-    className="m-2",
-    label="Run Model",
-    children=[
-        dbc.DropdownMenuItem(children=["Standard Run"], id="standard-run"),
-        dbc.DropdownMenuItem(children=["Live Run"], id="live-run")
-    ],
-    align_end=False,
-)
-standard_run_status = dcc.Loading(id="standard-model-run-loading",
-                         className='model-loading-div',
-                         type="default",
-                         children=[html.Div(id="standard-model-run-status")])
-live_run_status = dcc.Loading(id="live-model-run-loading",
-                         className='model-loading-div',
-                         type="default",
-                         children=[html.Div(id="live-model-run-status")])
+run_model = dbc.Button('Run Model', id='standard-run', n_clicks=0,
+                               color="secondary", className="me-1",
+                       size="sm", style={'font-size':'0.75em',
+                                         'width':'100%',
+                                         'height':'100%'}
+                       )
+
+standard_run_status = html.Div(children=[
+                        html.Div(id="run-progress-text",
+                               className='model-loading-div'),
+                            dcc.Interval(
+                                    id="status-interval",
+                                    interval=2*1000,
+                                    n_intervals=0
+                                )])
+
+
+current_episode = html.Div(children=[
+                            html.Div("Current Episode",
+                                     className="kpi-name"),
+                            html.Div("--",
+                                     id="current-episode-value",
+                                     className="kpi-value"),
+                            dcc.Interval(
+                                    id="episode-interval",
+                                    interval=2*1000,
+                                    n_intervals=0
+                                )
+                            ],
+                           className="kpi-box")
+
+expected_completion = html.Div(children=[
+                            html.Div("Expected Completion", className="kpi-name"),
+                            html.Div("--", className="kpi-value")
+                            ],
+                           className="kpi-box")
+
+damage = html.Div(children=[
+                            html.Div("Total Damage", className="kpi-name"),
+                            html.Div("--", className="kpi-value")
+                            ],
+                           className="kpi-box")
+
 make_navbar = dbc.Navbar(
     dbc.Container(
         dbc.Row(
             [
-                dbc.Col(
-                    html.Div(
-                        className="d-flex align-items-center",
-                        children=[
-                            #run_model_button,
-                            run_model_dropdown,
-                            standard_run_status
-                        ]
-                    ),
-                    width=2
-                ),
-                dbc.Col(
-                    html.Div(
-                        className="d-flex align-items-center",
-                        children=[
-                        html.Div(id="hidden-buttons"),
+                dbc.Col(run_model,
+                        width=1),
+                dbc.Col(children=[
+                        html.Div(children=[
+                            dbc.Button(
+                                n_clicks=0,
+                                children=["▶"],
+                                className="player-buttons",
+                                id="play-model-button"),
+                            dbc.Button(
+                                n_clicks=0,
+                                children=["▐▐"],
+                                className="player-buttons",
+                                id="pause-model-button")])
+                    ], width=1),
+                    dbc.Col(children=[
+                        html.Div(children=[
+                         standard_run_status,
                         html.Div(id="output-helper"),
-                        ]),
-                    width=2),
-                dbc.Col(
-                    children=[
-                        live_run_status
+                        html.Div(id="output-helper2"),
+                        html.Div(id="run-progress-placeholder"),
+                        html.Div(id="db-poller"),
+                        dcc.Interval(
+                                    id="db-interval",
+                                    interval=2*1000,
+                                    n_intervals=0
+                                )
+                        ],
+                                 className='play-button-group')
                     ],
-                    width=1),
-                dbc.Col(width=True),
+                        width=1,
+                        align='center'),
+                dbc.Col(width=1,
+                        children=[current_episode]),
+                dbc.Col(width=1,
+                        children=[expected_completion]),
+                dbc.Col(width=1,
+                        children=[damage]),
+                dbc.Col(width=True,
+                        children=[html.Div(children=["lol"])]),
                 dbc.Col(
                     dbc.Nav(
                         [
@@ -90,133 +126,150 @@ make_navbar = dbc.Navbar(
 
 
 @callback(
-    [Output('standard-model-run-loading', 'children'),
-     Output('model-run-type', 'data')],
-    [Input('standard-run', 'n_clicks'),
-     Input('live-run', 'n_clicks')],
+    [Output('run-progress-placeholder', 'children')],
+    [Input('standard-run', 'n_clicks')],
     [State('environment_parameters', 'data'),
      State('model_parameters', 'data'),
      State('map_parameters', 'data'),
-     State('rai_parameters', 'data')]
+     State('rai_parameters', 'data'),
+     State('api_url', 'data')]
 )
-def run_model(standard_clicked, live_clicked, env_p, mod_p, map_p, rai_p):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        return "", {"run-status": "off"}
 
-    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
+def run_model(standard_clicked, env_p, mod_p, map_p, rai_p, url):
+    if standard_clicked is None or standard_clicked == 0:
+        raise dash.exceptions.PreventUpdate
     payload = {"environment_parameters": env_p,
                "model_parameters": mod_p,
                "map_parameters": map_p,
                "rai_parameters": rai_p}
 
-    # Handle standard run
-    if button_id == 'standard-run' and standard_clicked:
-        response = requests.post('https://xraiapi-ba66c372be3f.herokuapp.com/model/standard/run_xrai', json=payload)
-        if response.status_code == 200:
-            success = html.I(id="model-run-success-icon",
-                             className="bi bi-check-circle-fill",
-                             style={'color': '#4d6b53'})
-            result_hover = dbc.Popover(
-                dbc.PopoverBody("Model ran successfully!"),
-                target="model-run-success-icon",
-                trigger="hover",
-            )
-            return [success, result_hover], {"run-status": "standard"}
-        else:
-            failure = html.I(id="model-run-fail-icon",
-                             className="bi bi-exclamation-circle-fill",
-                             style={'color': '#FF0000'})
-            result_hover = dbc.Popover(
-                dbc.PopoverBody(response.text),
-                target="model-run-fail-icon",
-                trigger="hover",
-            )
-            return [failure, result_hover], {"run-status": "standard"}
-
-    # Handle live run
-    elif button_id == 'live-run' and live_clicked:
-        return "", {"run-status": "live"}
-
-    return "", {"run-status": "off"}
-
+    call = url['api_url']
+    print(f'{call}/model/standard/run_xrai')
+    response = requests.post(f'{call}/model/standard/run_xrai', json=payload)
+    if response.status_code == 200:
+        return [" "]
+    else:
+        return [" "]
 
 # Callback to show the buttons dynamically when the live model is selected
-@callback(
-    Output("hidden-buttons", "children"),
-    Input("model-run-type", "data")
-)
-def show_player_buttons(run_type):
-    if run_type["run-status"] == "live":
-        return html.Div(className="player-button-group",
-                        children=[
-                            dbc.Button(
-                                children=["Play"],
-                                className="player-buttons",
-                                id="play-model-button"),
-                            dbc.Button(
-                                children=["Pause"],
-                                className="player-buttons",
-                                id="pause-model-button")
-                        ])
-    return ""  # Return nothing if not in "live" mode
-
-
-# Callback to handle the play button in live mode
-@callback(
-    Output('live-model-run-loading', 'children'),
-    Input('play-model-button', 'n_clicks'),
-    [State('environment_parameters', 'data'),
-     State('model_parameters', 'data'),
-     State('map_parameters', 'data'),
-     State('rai_parameters', 'data')]
-)
-def run_live_model(clicks, env_p, mod_p, map_p, rai_p):
-    if clicks:
-        payload = {"environment_parameters": env_p,
-                   "model_parameters": mod_p,
-                   "map_parameters": map_p,
-                   "rai_parameters": rai_p}
-
-        response = requests.post('https://xraiapi-ba66c372be3f.herokuapp.com/model/live/run_xrai', json=payload)
-
-        if response.status_code == 200:
-            success = html.I(id="model-run-success-icon",
-                             className="bi bi-check-circle-fill",
-                             style={'color': '#4d6b53'})
-            result_hover = dbc.Popover(
-                dbc.PopoverBody("Model ran successfully!"),
-                target="model-run-success-icon",
-                trigger="hover",
-            )
-            return [success, result_hover]
-        else:
-            failure = html.I(id="model-run-fail-icon",
-                             className="bi bi-exclamation-circle-fill",
-                             style={'color': '#FF0000'})
-            result_hover = dbc.Popover(
-                dbc.PopoverBody(response.text),
-                target="model-run-fail-icon",
-                trigger="hover",
-            )
-            return [failure, result_hover]
-    return ""
 
 @callback(
     Output(component_id="output-helper", component_property='children'),
-    Input('pause-model-button', 'n_clicks')
+    Input('pause-model-button', 'n_clicks'),
+    State('api_url', 'data')
 )
-def pause_live_model(clicks):
+def pause_live_model(clicks, url):
     if clicks:
-
-        response = requests.post('https://xraiapi-ba66c372be3f.herokuapp.com/model/pause')
-
+        print("Pause button clicked")
+        call = url['api_url']
+        print(f'{call}/model/pause')
+        response = requests.get(f'{call}/model/pause')
         if response.status_code == 200:
-
             return ""
-        else:
 
+
+@callback(
+    Output(component_id="output-helper2", component_property='children'),
+    Input('play-model-button', 'n_clicks'),
+    State('api_url', 'data')
+)
+def play_live_model(clicks, url):
+    if clicks:
+        print("Play button clicked")
+        call = url['api_url']
+        print(f'{call}/model/play')
+        response = requests.get(f'{call}/model/play')
+        if response.status_code == 200:
             return ""
+
+@callback(
+    Output("current-episode-value", "children"),
+    Input("episode-interval", "n_intervals"),
+    State("api_url", "data")  # Assuming your API URL is stored here
+)
+def update_current_step(n_intervals, url):
+    response = requests.get(f"{url['api_url']}/model/current_episode")
+    print(f"{url['api_url']}/model/current_episode")
+    if response.status_code == 200:
+        step = response.json().get("step")
+        return f"{step}"
+    else:
+        return "--"
+
+
+@callback(
+    Output("db-poller", "children"),
+    Input("db-interval", "n_intervals"),
+    State("api_url", "data")  # Assuming your API URL is stored here
+)
+def commit_db(n_intervals, url):
+    response = requests.get(f"{url['api_url']}/database/commit")
+    print(f"{url['api_url']}/database/commit")
     return ""
+
+
+@callback(
+    Output("run-progress-text", "children"),
+    Input("status-interval", "n_intervals"),
+    State("api_url", "data")  # Assuming your API URL is stored here
+)
+def update_current_status(n_intervals, url):
+    response = requests.get(f"{url['api_url']}/model/status")
+    print(f"{url['api_url']}/model/status")
+    if response.status_code == 200:
+        status = response.json().get("status")
+        print(status)
+        if status=="idle":
+            return html.Div(children=[html.I(id='idle',
+                                    className="bi bi-question-octagon-fill",
+                                   style={'color':'gray',
+                                          'font-size':'20px'}),
+                                      dbc.Popover(
+                                          "Idle",
+                                          target="idle",
+                                          body=True,
+                                          trigger="hover")],
+                            style={'margin':'auto'})
+        elif status=="initializing":
+            return html.Div(children=[html.I(id='initializing',
+                                    className="bi bi-list-check",
+                                   style={'color':'yellow',
+                                          'font-size':'20px'}),
+                                      dbc.Popover(
+                                          "Initializing...",
+                                          target="initializing",
+                                          body=True,
+                                          trigger="hover")])
+        elif status=="running":
+            return html.Div(children=[html.I(id='running',
+                                    className="bi bi-exclamation-circle-fill",
+                                   style={'color':'yellow',
+                                          'font-size':'20px'}),
+                                      dbc.Popover(
+                                          "Running...",
+                                          target="running",
+                                          body=True,
+                                          trigger="hover")])
+        elif status=="pause":
+            return html.Div(children=[html.I(id='paused',
+                                    className="bi bi-stopwatch-fill",
+                                   style={'color':'gray',
+                                          'font-size':'20px'}),
+                                      dbc.Popover(
+                                          "Model paused",
+                                          target="paused",
+                                          body=True,
+                                          trigger="hover")])
+        elif status=="complete":
+            return html.Div(children=[html.I(id='complete',
+                                    className="bi bi-check-circle-fill",
+                                   style={'color':'green',
+                                          'font-size':'20px'}),
+                                      dbc.Popover(
+                                          "Model run complete",
+                                          target="complete",
+                                          body=True,
+                                          trigger="hover")])
+    else:
+        return "--"
 

@@ -90,10 +90,13 @@ body {
 
 .attachment-drop-down {
     padding: 5%;
+    margin:auto;
     font-size=0.25em;
 
 }
-
+.chat-upload-attachment {
+    margin:auto;
+}
 
 attachment-drop-down-text{
     font-size=0.25em;
@@ -135,7 +138,7 @@ attachment-drop-down-text{
     background-color: #3d454d;
     border-color: #3d454d;
     width: 100%;
-    margin: 5%;
+    margin-top:5%;
 }
 
 /* -------------------------------------------------------------------- */
@@ -203,15 +206,7 @@ attachment-drop-down-text{
     background-color: #3b3b3b;
     width: 100%;
     --bs-navbar-padding-y: 0.15rem;
-}
-
-.nav-tabs .nav-item.show .nav-link {
-    font-size: 0.25em;
-}
-
-.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
-    background-color: #D3D3D3;
-    border-color: #D3D3D3;
+    display: inline-block !important;
 }
 
 .nav {
@@ -220,175 +215,61 @@ attachment-drop-down-text{
     --bs-nav-link-disabled-color:
     }
 
-#div.run-model-dropdown.run-model-button.dropdown {
-    color: #4d6b53;
-    background-color: #4d6b53;
-    border-color: #4d6b53;
-    width: 150%;
-    font-size: 1em;
-    margin-left: 5%;
-    margin-right: 5%;
+.navbar .run-model-group {
+    display: inline-block !important;
+    background-color: #fec036 !important;
+    margin: 5%;
 }
 
-.player-button-group{
-    display: inline-flex;
-    margin-right: 30%;
+.run-model-button {
+    display: inline-block !important;
+    width: 100%;
+    background-color: #212529;
+}
+.model-loading-div {
+    display: inline-block;
+    height:100%;
+    background-color: #212529;
+    font-color:white;
+    margin-left:10%;
+}
+.play-button-group{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: inline-block !important;
+    margin-left: 2%;
+    margin-right: 10%;
 }
 
 .player-buttons{
-    background-color: #3d454d  !important;
-    outline:none !important;
-    margin-top: 2%;
-    margin-left: 5%;
-    margin-right: 5%;
-    margin-bottom: 2%;
+    display: inline-block;
+    font-size: 0.5rem;
+    color: black;
+    background-color: #4d4d4d;
+    border-color: #4d4d4d !important;
+    margin: 2px;
 }
 
 
-
-.dashboard-container {
-    margin:10px;
+.kpi-box{
+    border-radius: 5px;
+    border-color: #4d4d4d !important;
+    margin: 0%;
 }
-/* Target the dropdown menu background */
-.dropdown-menu {
-    background-color: #3d454d !important;  /* Dark background color */
+
+
+.kpi-box .kpi-name{
+    font-size: 0.5rem;
+    color: #6b6a6a;
+}
+
+.kpi-box .kpi-value{
     font-size: 1rem;
-    outline: none !important;
-    box-shadow: none !important;
+    color: #6b6a6a;
 }
 
-/* Target dropdown items (text color, hover color, etc.) */
-.dropdown-item {
-    color: #ffffff !important;  /* White text color */
-    outline: none !important;
-    box-shadow: none !important;
-}
+/* -------------------------------------------------------------------- */
+/* -------------------------- Data View Elements ---------------------- */
+/* -------------------------------------------------------------------- */
 
-
-/* Remove outline from each dropdown item */
-.dropdown-item:focus {
-    outline: none !important;
-    box-shadow: none !important;  /* Remove shadow here as well */
-}
-
-/* Change the hover background color of dropdown items */
-.dropdown-item:hover {
-    background-color: #3d454d !important;  /* Darker gray on hover */
-    box-shadow: none !important;
-    box-shadow: none !important;
-}
-
-/* If you want to change the toggle button color */
-.dropdown-toggle {
-    background-color: #3d454d !important;  /* Blue toggle button */
-    color: #fff !important;  /* White text */
-}
-
-
-
-.run-option-div {
-        padding: 0.25rem
-}
-.run-option-checklist-div {
-        padding: 0.25rem;
-        font-size: 10px;
-        color: #fffff;
-}
-
-.dropdown {
-    font-color: #e5ecf2;
-    border-radius: 10px;
-    border-color: #e5ecf2;
-    margin:5px;
-    font-size:75%;
-    height:50%;
-}
-.dropdown .Select-control {
-    background-color: #3b3b3b !important;
-    color:#5D7B9E;
-  }
-
-.dropdown .Select-menu-outer {
-    background-color: rgb(25, 25, 25);
-    color: #5D7B9E;
-}
-
-.dropdown .Select-value-label {
-    color: #5D7B9E !important;
-}
-
-.slider {
-
-}
-
-
-.light-emphasis {
-    background: #DDE7F3;
-    border-radius: 10px;
-    padding:30px;
-    margin:5px;
-}
-
-
-
-.outline-emphasis {
-    border-color: #DDE7F3;
-    border-style: solid;
-    border-width: thin;
-    border-radius: 10px;
-    padding:20px;
-    margin:5px;
-}
-
-.button {
-   background-color: #024883;
-}
-
-.button:disabled {
-   background-color: #024883;
-}
-
-.minor-button {
-   background-color: #F1F2F3;
-   border-color: #A9A9A9;
-   color: #A9A9A9;
-   font-size: 14px;
-}
-
-.dark-emphasis-button {
-   background-color: #e5ecf2;
-   border-color: #e5ecf2;
-   color: #024883;
-}
-
-.tab {
-    padding:10px !important;
-    font-size: 14px;
-}
-
- .react-grid-Header {
-   box-shadow: 0px 0px 4px 0px #dddddd;
-   background: #f9f9f9;
- }
-
- .react-grid-HeaderCell {
-  background: #f9f9f9;
-  padding: 8px;
-  font-weight: bold;
-  border-right: 1px solid #dddddd;
-  border-bottom: 1px solid #dddddd;
-}
-
-.react-grid-Main {
-  background-color: black;
-  color: inherit;
-  padding: 0px;
-  outline: 1px solid #e7eaec;
-}
-
-.radio {
-
-    font-size: 14px;
-    margin:5px;
-
-}
