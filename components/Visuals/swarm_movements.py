@@ -45,7 +45,7 @@ def swarm_scatterplot(df, map_df):
             x=df[df["episode_id"]==0]["x_coord"],
             y=df[df["episode_id"] == 0]["y_coord"],
             mode="markers",
-            marker=dict(color="white"),
+            marker=dict(color="white", symbol="arrow-wide"),
         text=df[df['episode_id'] == 0].apply(lambda row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f}", axis=1),
         hoverinfo='text'
         )

@@ -30,6 +30,9 @@ table = dcc.Loading(
                 data=[],
                 page_size=150,  # Number of rows per page
                 style_table={'height': '400px', 'overflowY': 'auto'},
+                style_header={'backgroundColor': '#000000', 'color':'white'},
+                style_cell={'backgroundColor': '#454545', 'color':'white', 'fontSize':'0.75em'},
+                style_as_list_view=True
             )
         ]
     )

@@ -15,7 +15,7 @@ run_model_dropdown = dbc.DropdownMenu(
     label="Run Model",
     children=[
         dbc.DropdownMenuItem(children=["Standard Run"], id="standard-run"),
-        dbc.DropdownMenuItem(children=["Live Run"], id="live-run")
+        dbc.DropdownMenuItem(children=["Live Run"], id="live-run", disabled=True)
     ],
     align_end=False,
 )
