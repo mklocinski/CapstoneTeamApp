@@ -129,7 +129,7 @@ def run_model(standard_clicked, live_clicked, env_p, mod_p, map_p, rai_p):
                              className="bi bi-exclamation-circle-fill",
                              style={'color': '#FF0000'})
             result_hover = dbc.Popover(
-                dbc.PopoverBody(text.error_summary(response.text)),
+                dbc.PopoverBody(response.text),
                 target="model-run-fail-icon",
                 trigger="hover",
             )
@@ -196,7 +196,7 @@ def run_live_model(clicks, env_p, mod_p, map_p, rai_p):
                              className="bi bi-exclamation-circle-fill",
                              style={'color': '#FF0000'})
             result_hover = dbc.Popover(
-                dbc.PopoverBody(text.error_summary(response.text)),
+                dbc.PopoverBody(response.text),
                 target="model-run-fail-icon",
                 trigger="hover",
             )
