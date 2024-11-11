@@ -38,7 +38,7 @@ chat_data = config.chat_params
 app.layout = html.Div(
             children=[
             dcc.Store(id='api_url',
-                      data = {"api_url":"http://localhost:8000"}),
+                      data = {"api_url":"https://xraiapi-ba66c372be3f.herokuapp.com"}),
             # "http://127.0.0.1:5000"
             # "http://localhost:8000"
             # "https://xraiapi-ba66c372be3f.herokuapp.com"
