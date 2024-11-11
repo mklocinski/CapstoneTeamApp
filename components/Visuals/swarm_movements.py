@@ -205,6 +205,7 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
 
     # Custom animation controls
     fig.update_layout(
+        showlegend=False,
         updatemenus=[{
             'x': 0.15,
             'y': -0.1,
@@ -212,7 +213,7 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
             'pad': {"r": 0, "t": 0},
             'xanchor': "right",
             'yanchor': "top",
-            'font': dict(family="Arial", size=12, color="black"),
+            'font': dict(family="Arial", size=12, color="white"),
             'bgcolor': "#3b3b3b",
             'bordercolor': "gray",
             'borderwidth': 1,
@@ -239,6 +240,8 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
             ]
         }],
         sliders=[{
+            'tickcolor': "white",  # Tick mark color
+            'font': {'color':"white", 'size':8},
             'steps': [{
                 'args': [[str(i)], {
                     'frame': {'duration': 200, 'redraw': True},
@@ -247,7 +250,8 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
                 'label': str(i),
                 'method': 'animate'
             } for i in range(max_episode + 1)],
-            'currentvalue': {'prefix': 'Episode: '},
+            'currentvalue': {'prefix': 'Episode: ',
+                "font": {"size": 10, "color": "white"}},
             'x': 0.20,
             'y': 0
         }]

@@ -4,6 +4,30 @@ import dash_bootstrap_components as dbc
 import json
 import os
 
+data_dict_path = os.path.join("assets", "DRL Data Dictionary.xlsx")
+tbl_data = pd.read_excel(data_dict_path, sheet_name=None)
+
+def reorder_tbl(tbl_name):
+    right_order = [col for col in tbl_data[tbl_name]["DB Label"]]
+    return right_order
+
+def get_tbl_col_def(tbl_name):
+    tooltips = {r["DB Label"]:r["Description"] for i, r in tbl_data[tbl_name].iterrows()}
+    return tooltips
+
+
+def dt_data_type(col_name):
+    prefix = col_name[:4]
+    type_map = {
+        "cint": "numeric",
+        "cflt": "numeric",
+        "cstr": "text",
+        "cbln": "text",
+        "cdtm": "datetime",
+        "id": "text"}
+
+    return type_map[prefix]
+
 
 param_path = os.path.join("assets", "XRAI System - User Parameters.xlsx")
 parameters = pd.read_excel(param_path,  sheet_name="Parameters")

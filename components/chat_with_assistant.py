@@ -213,11 +213,12 @@ def ask_assistant(click, query, attachments, other_attachments, messages, dialog
     else:
         print("button clicked")
         # User-added attachments
+        user_attachs = []
         if other_attachments is not None:
             type, string = other_attachments.split(',')
             print(string)
             decodes = base64.b64decode(string)
-            user_attachs = pd.read_csv(io.StringIO(decodes.decode('utf-8')))
+            user_attachs = [pd.read_csv(io.StringIO(decodes.decode('utf-8')))]
         print(user_attachs)
         # Optional attachments
         api_call = api_url['api_url']

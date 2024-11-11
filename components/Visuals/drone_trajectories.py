@@ -12,15 +12,22 @@ def chart_drone_trajectories(df):
             y="y_coord",
             color="episode_id",
             custom_data=["drone_id", "episode_id"],
-            color_continuous_scale="Cividis"
-        )
+            color_continuous_scale="Cividis")
+
     fig.update_traces(hovertemplate='<b>Drone ID</b>: %{customdata[0]}<br> <b>Episode</b>: %{customdata[1]}')
     fig.update_xaxes(showticklabels=False, showgrid=False)
     fig.update_yaxes(showticklabels=False, showgrid=False)
+    fig.update_coloraxes(
+        colorbar_title="Episode",
+        colorbar_title_font=dict(size=10, color="white"),  # Title font size and color
+        colorbar_tickfont=dict(size=7, color="white")  # Tick font size and color
+    )
     fig.update_layout(
         paper_bgcolor='rgb(34,34,34,0)',
         plot_bgcolor='rgb(34,34,34,0)',
         margin=dict(l=0, r=0, t=0, b=0))
+    fig.update_yaxes(title='', visible=False, showticklabels=False, showgrid=False)
+    fig.update_xaxes(title='', visible=False, showticklabels=False, showgrid=False)
 
     return fig
 
