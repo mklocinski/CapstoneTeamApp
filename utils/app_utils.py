@@ -2,9 +2,12 @@ import pandas as pd
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import json
+import os
 
-parameters = pd.read_excel("C:/Users/mkloc/PycharmProjects/CapstoneApp/assets/XRAI System - User Parameters.xlsx", sheet_name="Parameters")
-parameter_values = pd.read_excel("C:/Users/mkloc/PycharmProjects/CapstoneApp/assets/XRAI System - User Parameters.xlsx", sheet_name="Parameter Values")
+
+param_path = os.path.join("assets", "XRAI System - User Parameters.xlsx")
+parameters = pd.read_excel(param_path,  sheet_name="Parameters")
+parameter_values = pd.read_excel(param_path, sheet_name="Parameter Values")
 
 def create_user_inputs(param_type,
                        parameter_df=parameters,
