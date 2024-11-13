@@ -87,9 +87,10 @@ class Assistant:
                 for content_block in message.content:  # Iterate through the content blocks
                     if hasattr(content_block, 'text'):  # Check if it has a 'text' attribute
                         response_text += content_block.text.value + "\n"  # Append the text value
-
+                self.file_id = None
                 return response_text.strip()  # Return the assistant's response content
             else:
+                self.file_id = None
                 # If no assistant message is found, return an error message
                 return "No response from assistant."
 
@@ -277,6 +278,7 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
         # Check for optional attachments--------------------------------------------------------
         ## Make API call to get most recent data for the selected table/data group
         api_call = api_url['api_url']
+        print(opt_attachments)
         attachment_calls = [f'{api_call}/database/last_run/{attach[1]}' for attach in opt_attachments]
         ## Initialize empty list to store attachments
         opt_attachs = []
