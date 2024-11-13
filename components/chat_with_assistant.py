@@ -188,7 +188,7 @@ submit_user_query = dbc.DropdownMenu(
                 {'label': 'Model Run Parameters', 'value': 'tbl_model_run_params'},
                 {'label': 'Model Runs', 'value': 'tbl_model_runs'}
             ],
-            value=['Local State Data'],
+            value=[],
             labelStyle={'font-size':'0.75em'}
         ),
     dbc.Button('Submit', id='chat-submit-button', n_clicks=0,
@@ -279,7 +279,7 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
         ## Make API call to get most recent data for the selected table/data group
         api_call = api_url['api_url']
         print(opt_attachments)
-        attachment_calls = [f'{api_call}/database/last_run/{attach[1]}' for attach in opt_attachments]
+        attachment_calls = [f'{api_call}/database/last_run/{attach}' for attach in opt_attachments]
         ## Initialize empty list to store attachments
         opt_attachs = []
         for call in attachment_calls:
