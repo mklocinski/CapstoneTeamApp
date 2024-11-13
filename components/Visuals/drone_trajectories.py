@@ -40,25 +40,9 @@ def trajectory_view(df):
                     value="all"
                 ),
                 html.Div(id='hidden', children=df.to_json(orient='split'), hidden=True),
-            dcc.Loading(
-                id="loading-drone-traj-plot",
-                children=[dcc.Graph(id="drone-traj-plot",
+            dcc.Graph(id="drone-traj-plot",
                           className="graph-object")])
-            ])
+
     return div
 
 
-@callback(
-    Output(component_id="drone-traj-plot", component_property="figure"),
-    Input(component_id="drone-traj-dropdown-filter", component_property="value"),
-    State(component_id="hidden", component_property="children")
-)
-def render_filtered_traj_graph(filter, json_df):
-    if filter == 'all':
-        df = pd.read_json(json_df, orient='split')
-        fig = chart_drone_trajectories(df)
-    else:
-        df = pd.read_json(json_df, orient='split')
-        filtered_df = df[df['drone_id']==filter]
-        fig = chart_drone_trajectories(filtered_df)
-    return fig

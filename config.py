@@ -1,7 +1,6 @@
 import os
 from utils import app_utils
 
-# Callbacks
 
 # Default Parameters
 model_run_status = {"run-status":"off"}

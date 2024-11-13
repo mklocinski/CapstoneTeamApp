@@ -73,13 +73,11 @@ def reward_trend_viewer(reward_data):
     return fig
 
 
-def reward_view(df):
+def reward_view():
     div = html.Div(children=[
-        dcc.Loading(
-            id="loading-rewards-plot",
-            children=[
-                dcc.Graph(figure=reward_trend_viewer(df), className="graph-object")
-    ])])
+
+                dcc.Graph(id="reward_viz", className="graph-object")
+    ])
     return div
 
 

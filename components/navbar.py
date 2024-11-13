@@ -1,7 +1,7 @@
 import dash
 from dash import html, dcc, callback, Input, Output, State, clientside_callback
 import dash_bootstrap_components as dbc
-from utils import text
+import time
 import requests
 
 
@@ -18,7 +18,8 @@ standard_run_status = html.Div(children=[
                             dcc.Interval(
                                     id="status-interval",
                                     interval=2*1000,
-                                    n_intervals=0
+                                    n_intervals=0,
+                                    disabled=True
                                 )])
 
 
@@ -31,7 +32,8 @@ current_episode = html.Div(children=[
                             dcc.Interval(
                                     id="episode-interval",
                                     interval=2*1000,
-                                    n_intervals=0
+                                    n_intervals=0,
+                                    disabled=True
                                 )
                             ],
                            className="kpi-box")
@@ -76,8 +78,9 @@ make_navbar = dbc.Navbar(
                         html.Div(id="db-poller"),
                         dcc.Interval(
                                     id="db-interval",
-                                    interval=2*1000,
-                                    n_intervals=0
+                                    interval=1000,
+                                    n_intervals=0,
+                                    disabled=True
                                 )
                         ],
                                  className='play-button-group')
@@ -125,15 +128,28 @@ make_navbar = dbc.Navbar(
 
 
 
+@callback(Output("episode-interval", "disabled"),
+     Output("db-interval", "disabled"),
+    Output("status-interval", "disabled",
+           allow_duplicate=True),
+          Input("model-run-status", "data"),
+          prevent_initial_call=True)
+def start_polling(status):
+    if status["run-status"] == "running":
+        return False, False, False
+    else:
+        return True, True, True
+
 @callback(
-    [Output('run-progress-placeholder', 'children')],
+    [Output('run-progress-placeholder', 'children'),
+     Output("status-interval", "disabled", allow_duplicate=True)],
     [Input('standard-run', 'n_clicks')],
     [State('environment_parameters', 'data'),
      State('model_parameters', 'data'),
      State('map_parameters', 'data'),
      State('rai_parameters', 'data'),
-     State('api_url', 'data')]
-)
+     State('api_url', 'data')],
+prevent_initial_call=True)
 
 def run_model(standard_clicked, env_p, mod_p, map_p, rai_p, url):
     if standard_clicked is None or standard_clicked == 0:
@@ -147,9 +163,9 @@ def run_model(standard_clicked, env_p, mod_p, map_p, rai_p, url):
     print(f'{call}/model/standard/run_xrai')
     response = requests.post(f'{call}/model/standard/run_xrai', json=payload)
     if response.status_code == 200:
-        return [" "]
+        return [" "], False
     else:
-        return [" "]
+        return [" "], True
 
 # Callback to show the buttons dynamically when the live model is selected
 
@@ -200,18 +216,21 @@ def update_current_step(n_intervals, url):
 @callback(
     Output("db-poller", "children"),
     Input("db-interval", "n_intervals"),
-    State("api_url", "data")  # Assuming your API URL is stored here
+    State("api_url", "data"),
+    State("model-run-status", "data")# Assuming your API URL is stored here
 )
-def commit_db(n_intervals, url):
+def commit_db(n_intervals, url, status):
     response = requests.get(f"{url['api_url']}/database/commit")
+    print(status)
     print(f"{url['api_url']}/database/commit")
     return ""
 
 
 @callback(
     Output("run-progress-text", "children"),
+    Output("model-run-status", "data"),
     Input("status-interval", "n_intervals"),
-    State("api_url", "data")  # Assuming your API URL is stored here
+    State("api_url", "data"),
 )
 def update_current_status(n_intervals, url):
     response = requests.get(f"{url['api_url']}/model/status")
@@ -229,7 +248,7 @@ def update_current_status(n_intervals, url):
                                           target="idle",
                                           body=True,
                                           trigger="hover")],
-                            style={'margin':'auto'})
+                            style={'margin':'auto'}), {"run-status":"off"}
         elif status=="initializing":
             return html.Div(children=[html.I(id='initializing',
                                     className="bi bi-list-check",
@@ -239,17 +258,17 @@ def update_current_status(n_intervals, url):
                                           "Initializing...",
                                           target="initializing",
                                           body=True,
-                                          trigger="hover")])
+                                          trigger="hover")]), {"run-status":"running"}
         elif status=="running":
             return html.Div(children=[html.I(id='running',
                                     className="bi bi-exclamation-circle-fill",
-                                   style={'color':'yellow',
+                                   style={'color':'#3b3b3b',
                                           'font-size':'20px'}),
                                       dbc.Popover(
                                           "Running...",
                                           target="running",
                                           body=True,
-                                          trigger="hover")])
+                                          trigger="hover")]), {"run-status":"running"}
         elif status=="pause":
             return html.Div(children=[html.I(id='paused',
                                     className="bi bi-stopwatch-fill",
@@ -259,8 +278,9 @@ def update_current_status(n_intervals, url):
                                           "Model paused",
                                           target="paused",
                                           body=True,
-                                          trigger="hover")])
+                                          trigger="hover")]), {"run-status":"running"}
         elif status=="complete":
+            time.sleep(5)
             return html.Div(children=[html.I(id='complete',
                                     className="bi bi-check-circle-fill",
                                    style={'color':'green',
@@ -269,7 +289,8 @@ def update_current_status(n_intervals, url):
                                           "Model run complete",
                                           target="complete",
                                           body=True,
-                                          trigger="hover")])
+                                          trigger="hover")]), {"run-status":"off"}
     else:
-        return "--"
+        return "--", {"run-status":"off"}
+
 

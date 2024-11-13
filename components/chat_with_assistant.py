@@ -17,11 +17,14 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
 
 class Assistant:
-    def __init__(self, apikey, assistant_id, message_history):
+    def __init__(self, apikey, assistant_id, message_history, file_trunction=10):
         self.apikey = apikey
         self.assistant_id = assistant_id
         self.client = None
         self.thread_id = None
+        self.file_id = None # --> from global file_id
+        self.file_list = [] # --> from global file_list
+        self.file_truncation = file_trunction # --> from row_counts
 
     def initialize_client(self):
         self.client = OpenAI(api_key=self.apikey)
@@ -80,7 +83,25 @@ class Assistant:
                 # If no assistant message is found, return an error message
                 return "No response from assistant."
 
+    def update_file(self, input_df):
+        # global file_id --> both global vars are now class attributes
+        # global file_list  # Use the global file_list variable to track the files created
+        #
+        # # Generate the truncated CSV file
+        # input_file = 'tbl_local_state.csv' --> now an input parameter
 
+        if not isinstance(input_df, pd.DataFrame):
+            raise ValueError("The input must be a DataFrame.")
+        output_file = 'updated_file.csv'
+        truncated_df = input_df.head(self.file_truncation) # --> parse_csv(input_file, output_file, row_count)
+        truncated_df.to_csv(output_file, index=False)
+
+        # Upload the new truncated file to OpenAI and store the new file ID
+        new_file = self.client.files.create(file=open(output_file, "rb"), purpose="assistants")
+        self.file_id = new_file.id  # Update the global file ID
+        self.file_list.append(self.file_id)  # Add the newly created file to the file list
+        os.remove(output_file)
+        print(f"Updated file uploaded with file ID: {self.file_id}")
 
 def chat_bubble(participant, message):
     if message:
@@ -125,11 +146,7 @@ about_your_assistant_text = dbc.Popover(
             target="chat-about-assistant",
             trigger="click",
         )
-# submit_user_query = dbc.Button(
-#                         children=[html.I( className='bi bi-send')],
-#                         className="query-button",
-#                         id="chat-user-query-button",
-#                         n_clicks=0)
+
 
 
 file_upload = html.Div(
@@ -193,58 +210,93 @@ layout = html.Div(
 
 
 @callback([
+            # Updates chat area (i.e. bubbles) in the app with new chat bubbles
+            # for the user query and assistant resposne
             Output(component_id="chat-dialog", component_property="children"),
+            # Updates in-app chat message store with user query and assistant response
             Output(component_id="chat-messages", component_property="data"),
+            # Clears query box
             Output(component_id="chat-user-query-box", component_property="value")
            ],
+    # Direct input/trigger: "Submit" button click
     Input( component_id="chat-submit-button", component_property="n_clicks"),
+    # Indirect input: user query that was entered into query box
     [State(component_id="chat-user-query-box", component_property="value"),
+     # Indirect input: attachments selected in attachment options dropdown
      State(component_id="chat-option-attachments", component_property="value"),
+     # Indirect input: user-uploaded attachments
     State(component_id="attachment", component_property="contents"),
+     # Indirect input: in-app chat message store (old queries/responses for session)
     State(component_id="chat-messages", component_property="data"),
+     # Indirect input: chat area (i.e. bubbles)
      State(component_id="chat-dialog", component_property="children"),
+     # Indirect input: environment's API url
      State('api_url', 'data')]
         )
-def ask_assistant(click, query, attachments, other_attachments, messages, dialog_area, api_url):
-    if dialog_area is None:
-        dialog_area = []
+def ask_assistant(click, query, opt_attachments, user_attachments, messages, chat_dialog, api_url):
+    # Check if there is an existing conversation *in the app*
+    if chat_dialog is None:
+        chat_dialog = []
+    # Check if the user has clicked "Submit"
     if click == 0:
-        return dialog_area, messages, query
+        # If not, return an empty dialog area, existing messages thread, and query box contents
+        return chat_dialog, messages, query
     else:
-        print("button clicked")
-        # User-added attachments
+        print("button clicked") # for debugging
+        # Initialize Assistant (see class definition above) ------------------------------------
+        assistant = Assistant(openai_api_key, assistant_id, messages)
+        assistant.initialize_client()
+        # If there are no messages in in-app message memory, create initial dictionary
+        if messages is None:
+            messages = {"messages":[{"role": "system", "content": "hello"}]}
+        # If there are messages, append query
+        messages["messages"].append({"role": "user", "content": query})
+        # Check for user-added attachments (paperclip)------------------------------------------
+        ## Initialize empty list to store multiple attachments
         user_attachs = []
-        if other_attachments is not None:
-            type, string = other_attachments.split(',')
-            print(string)
+        ## If user attachments exists:
+        if user_attachments is not None:
+            ### Read in file and add formatted dfs to user_attachs
+            type, string = user_attachments.split(',')
             decodes = base64.b64decode(string)
+            ### Currently working on simple 1-file upload, so df is not appended but replaces contents
             user_attachs = [pd.read_csv(io.StringIO(decodes.decode('utf-8')))]
-        print(user_attachs)
-        # Optional attachments
+        print(user_attachs)  # for debugging
+        for attach in user_attachs:
+            assistant.update_file(attach)
+        # Check for optional attachments--------------------------------------------------------
+        ## Make API call to get most recent data for the selected table/data group
         api_call = api_url['api_url']
-        attachment_calls = [f'{api_call}/database/last_run/{attach[1]}' for attach in attachments]
-        opt_attachments = []
+        attachment_calls = [f'{api_call}/database/last_run/{attach[1]}' for attach in opt_attachments]
+        ## Initialize empty list to store attachments
+        opt_attachs = []
         for call in attachment_calls:
             response = requests.get(call)
+            ## Check if call was successful
             if response.status_code == 200:
                 print("Data successfully fetched from API")
+                ### Read in file and append formatted dfs to opt_attachs
                 data = response.json()
                 df = pd.DataFrame(data)
                 new_cols = [col[5:] for col in df.columns]
                 df.columns = new_cols
-                opt_attachments.append(df)
-            print(opt_attachments)
-        assistant = Assistant(openai_api_key, assistant_id, messages)
-        assistant.initialize_client()
-        if messages is None:
-            messages = {"messages":[{"role": "system", "content": "hello"}]}
-        messages["messages"].append({"role": "user", "content": query})
+                opt_attachs.append(df)
+            print(opt_attachs)  # for debugging
+            for attach in opt_attachs:
+                assistant.update_file(attach)
+        # Submit and receive assistant response
         assistant_response = assistant.generate_response(query)
-        print("just messaged assistant")
+        # [Add in error handling]
+        print("just messaged assistant")  # for debugging
+        # Append response to in-app message store
         messages["messages"].append({"role": "assistant", "content": assistant_response})
-        dialog_area.insert(0, chat_bubble("user", query))
-        dialog_area.insert(0, chat_bubble("assistant", assistant_response))
-        return dialog_area, messages, ""
+        # Create and add user query bubble (white,right-hand side bubble) to dialog area
+        chat_dialog.insert(0, chat_bubble("user", query))
+        # Create and add assistant response bubble (blue, left-hand side bubble) to dialog area
+        chat_dialog.insert(0, chat_bubble("assistant", assistant_response))
+        # Return dialog area updated with chat bubbles; in-app message store updated with
+        # recent query and response; and an empty string to the query box (to clear out last query)
+        return chat_dialog, messages, ""
 
 
 
