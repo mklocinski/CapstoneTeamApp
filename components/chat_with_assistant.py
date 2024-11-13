@@ -52,6 +52,16 @@ class Assistant:
             )
             print(f" --> Added message to existing thread: {self.thread_id}")
 
+        # Add file as a new message if there's an updated file.
+        if self.file_id:
+            self.client.beta.threads.messages.create(
+                thread_id=self.thread_id,
+                role="user",
+                content="Please refer to this updated file.",
+                attachments=[{"file_id": self.file_id, "tools": [{"type": "code_interpreter"}]}]
+            )
+            print(f"File with ID {self.file_id} attached to the thread.")
+
         # Run the assistant thread
         run = self.client.beta.threads.runs.create(thread_id=self.thread_id, assistant_id=self.assistant_id)
         print(f" --> Run Created: {run.id}")
