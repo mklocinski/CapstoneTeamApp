@@ -67,7 +67,7 @@ body {
     width: 95%;
     height:50px;
     resize: none;
-    font-size: 0.5em;
+    font-size: 0.85em;
 }
 
 .assistant-chat-area .chat-user-query-area .chat-user-query-bottom-row {
