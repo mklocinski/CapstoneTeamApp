@@ -103,26 +103,46 @@ class Assistant:
                 # If no assistant message is found, return an error message
                 return {'text':"No response from assistant.", 'image': []}
 
-    def save_and_return_images(self):# Adjusted from "show" to "return", as chat_bubble() handles display
-        directory_path = "assets/images/openai_images"
-        if not os.path.isdir(directory_path):
-            os.makedirs(directory_path)
+    def save_and_return_images(self):
+        base64_images = []
 
         for image_file_id in self.image_list:
-            # Retrieve image content as a byte stream from the OpenAI API
             image_file = self.client.files.content(image_file_id)
             image_bytes = BytesIO(image_file.read())  # Load image data into BytesIO
 
-            # Open the image from the byte stream
             try:
                 image = Image.open(image_bytes)
-                image_path = os.path.join(directory_path, f"{image_file_id}.png")
-
-                # Save image to disk without needing a file descriptor
-                image.save(image_path)
-                self.image_path_list.append(image_path)
+                buffered = BytesIO()
+                image.save(buffered, format="PNG")
+                img_base64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+                img_data = f"data:image/png;base64,{img_base64}"
+                base64_images.append(img_data)
             except Exception as e:
-                print(f"Error saving image {image_file_id}: {e}")
+                print(f"Error encoding image {image_file_id}: {e}")
+
+        self.image_path_list = base64_images  # Now contains Base64 strings instead of paths
+        return self.image_path_list
+
+    # def save_and_return_images(self):# Adjusted from "show" to "return", as chat_bubble() handles display
+    #     directory_path = "assets/images/openai_images"
+    #     if not os.path.isdir(directory_path):
+    #         os.makedirs(directory_path)
+    #
+    #     for image_file_id in self.image_list:
+    #         # Retrieve image content as a byte stream from the OpenAI API
+    #         image_file = self.client.files.content(image_file_id)
+    #         image_bytes = BytesIO(image_file.read())  # Load image data into BytesIO
+    #
+    #         # Open the image from the byte stream
+    #         try:
+    #             image = Image.open(image_bytes)
+    #             image_path = os.path.join(directory_path, f"{image_file_id}.png")
+    #
+    #             # Save image to disk without needing a file descriptor
+    #             image.save(image_path)
+    #             self.image_path_list.append(image_path)
+    #         except Exception as e:
+    #             print(f"Error saving image {image_file_id}: {e}")
 
     def update_file(self, input_df):
         # global file_id --> both global vars are now class attributes
