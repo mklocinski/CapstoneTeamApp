@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from pages import main
 from components import navbar
 import config
+import os
 
 # ------------------------------------------------------------------ #
 # --------------------------- Styling ------------------------------ #
@@ -28,6 +29,13 @@ from flask.helpers import get_root_path
 print(get_root_path(__name__))
 # Register first screen of app as 'Main'
 dash.register_page("Main", layout=main.main_layout, path='/')
+directory_path = "assets/images/openai_images"
+if os.path.isdir(directory_path):
+    for filename in os.listdir(directory_path):
+        file_path = os.path.join(directory_path, filename)
+        # Check if it's a file (to exclude directories)
+        if os.path.isfile(file_path):
+            print(filename)
 
 # Define first screen layout
 map_data = config.map_params
