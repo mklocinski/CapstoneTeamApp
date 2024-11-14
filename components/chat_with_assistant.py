@@ -103,10 +103,13 @@ class Assistant:
                 return {'text':"No response from assistant.", 'image': []}
 
     def save_and_return_images(self):  # Adjusted from "show" to "return", as chat_bubble() handles display
+        directory_path = "assets/images/openai_images"
+        if not os.path.isdir(directory_path):
+            os.makedirs(directory_path)
         for image_file_id in self.image_list:
             image_file = self.client.files.content(image_file_id)
             image = Image.open(image_file)
-            image_path = os.path.join("assets", "images", "openai_images", f"{image_file_id}.png")
+            image_path = os.path.join(directory_path, f"{image_file_id}.png")
             image.save(image_path)
             self.image_path_list.append(image_path)
             return self.image_path_list
@@ -145,14 +148,11 @@ class Assistant:
         # Removes all images saved to the app at close of user session
         if len(self.image_path_list) > 0:
             for i_path in self.image_path_list:
-                if os.path.exists(i_path):
-                    for filename in os.listdir(i_path):
-                        file_path = os.path.join(i_path, filename)
-                        if os.path.isfile(file_path):
-                            os.remove(file_path)
-                            print(f"Removed file: {file_path}")
-                        else:
-                            print(f"Skipped non-file: {file_path}")
+                if os.path.isfile(i_path):
+                    os.remove(i_path)
+                    print(f"Removed file: {i_path}")
+                else:
+                    print(f"Skipped non-file: {i_path}")
 
 
 
@@ -177,7 +177,7 @@ def chat_bubble(participant, message):
                                   children=[dbc.CardBody(
                                       [
                                         html.P(children=[message['text']]),
-                                        html.Img(children=[message['image']])
+                                        html.Img(src=[message['image']])
 
                                       ]
                                   )]
@@ -359,7 +359,7 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
         # recent query and response; and an empty string to the query box (to clear out last query)
         return chat_dialog, messages, ""
 
-# Purges previous Assistant session as well as any in-app files saved during the previous session
+#Purges previous Assistant session as well as any in-app files saved during the previous session
 @callback(
     # Output: N/a; A dummy html div is supplied since each callback needs some sort of output
     Output("page-load-trigger-output", "children"),
@@ -371,7 +371,7 @@ def on_page_load(data):
         data["is_loaded"] = True
         assistant = Assistant(openai_api_key, assistant_id, None)
         assistant.initialize_client()
-        assistant.purge_files()
+        #assistant.purge_files()
         assistant.purge_session_images()
         return "Page loaded or refreshed!"
     return "Page already loaded!"
