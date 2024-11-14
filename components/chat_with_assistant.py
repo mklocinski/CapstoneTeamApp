@@ -177,7 +177,11 @@ def chat_bubble(participant, message):
                                   children=[dbc.CardBody(
                                       [
                                         html.P(children=[message['text']]),
-                                        html.Img(src=[message['image']])
+                                          html.A(
+                                              html.Img(src=message['image'], style={'cursor': 'pointer'}),
+                                              href=message['image'],
+                                              target="_blank"
+                                          )
 
                                       ]
                                   )]

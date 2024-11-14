@@ -88,6 +88,12 @@ body {
 
 }
 
+.assistant-chat-area .chat-assistant-dialog .chat-bubble-assistant img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
 .attachment-drop-down {
     padding: 5%;
     margin:auto;
