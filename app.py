@@ -56,6 +56,8 @@ app.layout = html.Div(
                       data = drl_data),
             dcc.Store(id='chat_parameters',
                       data = chat_data),
+            dcc.Store(id="page-load-trigger", data={"is_loaded": False}),
+            html.Div(id="page-load-trigger-output"),
             dash.page_container,
             navbar.make_navbar
             ])

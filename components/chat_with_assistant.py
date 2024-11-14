@@ -1,14 +1,14 @@
 from dash import html, callback, Input, Output, State, dcc
 import dash_bootstrap_components as dbc
 from utils import text
-from openai import OpenAI, api_key
+from openai import OpenAI
 import time
-import pickle
 import os
 import requests
 import pandas as pd
 import base64
 import io
+from PIL import Image
 
 # ------------------------------------------------------------------ #
 # --------------------- Assistant Interaction ---------------------- #
@@ -17,14 +17,16 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
 
 class Assistant:
-    def __init__(self, apikey, assistant_id, message_history, file_trunction=10):
+    def __init__(self, apikey, assistant_id, message_history, file_truncation=10):
         self.apikey = apikey
         self.assistant_id = assistant_id
         self.client = None
         self.thread_id = None
         self.file_id = None # --> from global file_id
         self.file_list = [] # --> from global file_list
-        self.file_truncation = file_trunction # --> from row_counts
+        self.file_truncation = file_truncation # --> from row_counts
+        self.image_list = []
+        self.image_path_list = []
 
     def initialize_client(self):
         self.client = OpenAI(api_key=self.apikey)
@@ -84,15 +86,30 @@ class Assistant:
                 # Extract and return the actual response text
                 # Handle list of content blocks
                 response_text = ""
+                image_ids = []
                 for content_block in message.content:  # Iterate through the content blocks
                     if hasattr(content_block, 'text'):  # Check if it has a 'text' attribute
                         response_text += content_block.text.value + "\n"  # Append the text value
+                    if hasattr(content_block, 'image_file'): # Changed for consistency
+                        image_file_id = getattr(content_block.image_file, "file_id", None)
+                        self.image_list.append(image_file_id)
                 self.file_id = None
-                return response_text.strip()  # Return the assistant's response content
+                self.save_and_return_images()
+                return {'text': response_text.strip(),
+                        'image': self.image_path_list}  # Return the assistant's response content
             else:
                 self.file_id = None
                 # If no assistant message is found, return an error message
-                return "No response from assistant."
+                return {'text':"No response from assistant.", 'image': []}
+
+    def save_and_return_images(self):  # Adjusted from "show" to "return", as chat_bubble() handles display
+        for image_file_id in self.image_list:
+            image_file = self.client.files.content(image_file_id)
+            image = Image.open(image_file)
+            image_path = os.path.join("assets", "images", "openai_images", f"{image_file_id}.png")
+            image.save(image_path)
+            self.image_path_list.append(image_path)
+            return self.image_path_list
 
     def update_file(self, input_df):
         # global file_id --> both global vars are now class attributes
@@ -114,7 +131,36 @@ class Assistant:
         os.remove(output_file)
         print(f"Updated file uploaded with file ID: {self.file_id}")
 
+    def purge_files(self):
+        # Cleans up OpenAI Storage by deleting updated CSVs
+        for file in self.file_list:
+            self.client.files.delete(file)
+
+    def purge_image_paths(self):
+        # The images from the current session remain saved to the app, but the assistant instance's
+        # self.image_path_list is purged to prevent redundant image returns
+        self.image_path_list = []
+
+    def purge_session_images(self):
+        # Removes all images saved to the app at close of user session
+        if len(self.image_path_list) > 0:
+            for i_path in self.image_path_list:
+                if os.path.exists(i_path):
+                    for filename in os.listdir(i_path):
+                        file_path = os.path.join(i_path, filename)
+                        if os.path.isfile(file_path):
+                            os.remove(file_path)
+                            print(f"Removed file: {file_path}")
+                        else:
+                            print(f"Skipped non-file: {file_path}")
+
+
+
+
+
+
 def chat_bubble(participant, message):
+    bubble = None
     if message:
         if participant == 'user':
             bubble = dbc.Card(className="chat-bubble-user",
@@ -128,13 +174,14 @@ def chat_bubble(participant, message):
                               )
         elif participant == 'assistant':
             bubble = dbc.Card(className="chat-bubble-assistant",
-                              children=[dbc.CardBody(
-                                  [
-                                      html.P(children=[message]
-                                             ),
-                                  ]
-                              )]
-                              )
+                                  children=[dbc.CardBody(
+                                      [
+                                        html.P(children=[message['text']]),
+                                        html.Img(children=[message['image']])
+
+                                      ]
+                                  )]
+                                  )
         return bubble
 
 
@@ -275,7 +322,7 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
         print(user_attachs)  # for debugging
         for attach in user_attachs:
             assistant.update_file(attach)
-        # Check for optional attachments--------------------------------------------------------
+        # Check for optional attachments (checkbox) ----------------------------------------------
         ## Make API call to get most recent data for the selected table/data group
         api_call = api_url['api_url']
         print(opt_attachments)
@@ -306,9 +353,25 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
         chat_dialog.insert(0, chat_bubble("user", query))
         # Create and add assistant response bubble (blue, left-hand side bubble) to dialog area
         chat_dialog.insert(0, chat_bubble("assistant", assistant_response))
+        # Purge assistant instance's image_list; images are still saved to assets\images\openai_images
+        assistant.purge_image_paths()
         # Return dialog area updated with chat bubbles; in-app message store updated with
         # recent query and response; and an empty string to the query box (to clear out last query)
         return chat_dialog, messages, ""
 
-
-
+# Purges previous Assistant session as well as any in-app files saved during the previous session
+@callback(
+    # Output: N/a; A dummy html div is supplied since each callback needs some sort of output
+    Output("page-load-trigger-output", "children"),
+    Input("page-load-trigger", "data")
+)
+def on_page_load(data):
+    if not data["is_loaded"]:
+        # Modify the data to mark it as loaded
+        data["is_loaded"] = True
+        assistant = Assistant(openai_api_key, assistant_id, None)
+        assistant.initialize_client()
+        assistant.purge_files()
+        assistant.purge_session_images()
+        return "Page loaded or refreshed!"
+    return "Page already loaded!"
