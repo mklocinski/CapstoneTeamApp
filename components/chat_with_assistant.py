@@ -177,12 +177,8 @@ def chat_bubble(participant, message):
                 children=[dbc.Card(className="chat-bubble-assistant",
                                   children=[dbc.CardBody(
                                       [
-                                        html.P(children=[message['text']]),
-                                         # html.A(
-                                              html.Img(src=message['image'], style={'cursor': 'pointer'})
-                                        #      href=message['image'],
-                                        #      target="_blank"
-                                        #  )
+                                        html.Img(src=message['image'], style={'cursor': 'pointer'}),
+                                        html.P(children=[message['text']])
 
                                       ]
                                   )]
@@ -442,8 +438,9 @@ def on_page_load(clicks):
     if clicks:
         assistant = Assistant(openai_api_key, assistant_id, None)
         assistant.initialize_client()
-        #assistant.purge_files()
+        assistant.purge_files()
         assistant.purge_session_images()
+        print("purged")
         return ""
     return ""
 
