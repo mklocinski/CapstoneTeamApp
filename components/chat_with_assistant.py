@@ -209,7 +209,25 @@ about_your_assistant_text = dbc.Popover(
             trigger="click",
         )
 
+refresh_session = html.Button(children=[html.I(className='bi bi-arrow-clockwise')],
+                              id='chat-refresh-btn',
+                              className='chat-refresh-button',
+                              n_clicks=0)
+refresh_tooltip = dbc.Tooltip(
+            "Refresh Assistant session.",
+            target="chat-refresh-btn",
+        )
+refresh_dummy = html.Div(id="refresh-dummy", children=[])
 
+submit = html.Button(children=[html.I(className='bi bi-send',
+                                      style={'color':'white'})],
+                              id='chat-submit-btn',
+                              className='chat-submit-button',
+                              n_clicks=0)
+submit_tooltip = dbc.Tooltip(
+            "Submit query and attachments to assistant.",
+            target="chat-submit-btn",
+        )
 
 file_upload = html.Div(
     id='upload-attachment',
@@ -219,15 +237,17 @@ file_upload = html.Div(
         children=html.Div([
             html.I( className='bi bi-paperclip'),
         ]),
-        accept=".csv")]
+        accept=".csv")],
+    style={'display': 'inline-flex',
+                            'align-items': 'left',
+                            'justify-content': 'left'}
 )
-submit_user_query = dbc.DropdownMenu(
-    id="chat-user-query-button",
-    className="m-2",
-    label=html.I( className='bi bi-send'),
-    children=[
-        html.P("Attach most recent run data:"),
-        dcc.Checklist(
+file_upload_tooltip = dbc.Tooltip(
+            "Upload a local .csv to submit to Assistant",
+            target="upload-attachment",
+        )
+
+sys_attachment_checklist = dcc.Checklist(
             id="chat-option-attachments",
             className="attachment-drop-down",
             labelClassName="attachment-drop-down-text",
@@ -240,8 +260,38 @@ submit_user_query = dbc.DropdownMenu(
                 {'label': 'Model Runs', 'value': 'tbl_model_runs'}
             ],
             value=[],
-            labelStyle={'font-size':'0.75em'}
-        ),
+            labelStyle={'font-size':'0.75em'},
+        style={'display': 'none'}
+        )
+sys_attach = html.Div(
+    id='system-attachment',
+    className="chat-sys-attachment",
+    children=[
+        html.Button(children=[html.I( className='bi bi-check2-square')],
+                    id='sys-attach-btn',
+                    n_clicks=0,
+                    style={'border':'0px',
+                           'display': 'inline-flex',
+                           'background-color':'white',
+                            'align-items': 'left',
+                            'justify-content': 'left'}),
+        sys_attachment_checklist
+        ]
+)
+
+sys_attach_tooltip = dbc.Tooltip(
+            "Attach and send current model run data to Assistant.",
+            target="sys-attach-btn",
+        )
+
+
+submit_user_query = dbc.DropdownMenu(
+    id="chat-user-query-button",
+    className="m-2",
+    label=html.I( className='bi bi-send'),
+    children=[
+        html.P("Attach most recent run data:"), sys_attachment_checklist
+        ,
     dbc.Button('Submit', id='chat-submit-button', n_clicks=0,
                                color="secondary", className="me-1",
                 size="sm", style={"margin-left":"50%"})
@@ -253,13 +303,29 @@ layout = html.Div(
         id='chat-area',
         className='assistant-chat-area',
         children=[
+                refresh_dummy,
                 dialog_area,
-                html.Div(className="chat-user-query-area",
-                        children=[
-                            user_query_box,
-                            file_upload,
-                            submit_user_query
-                            ]),
+                html.Div(className="chat",
+                         children=[
+                                    html.Div(className="chat-user-query-area",
+                                            children=[
+                                                html.Div(className="chat-user-query-top-row",
+                                                         children=[user_query_box,
+                                                                   html.Div(className="chat-button-col",
+                                                                       children=[submit,
+                                                                                 submit_tooltip,
+                                                                refresh_session,
+                                                                refresh_tooltip])
+
+                                                    ]),
+                                                html.Div(className="chat-user-query-bottom-row",
+                                                         children=[sys_attach,
+                                                                   sys_attach_tooltip,
+                                                                   file_upload,
+                                                                   file_upload_tooltip]),
+                                                ]),
+
+                ]),
                 html.Div(
                          children=[
                             about_your_assistant,
@@ -366,16 +432,26 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
 #Purges previous Assistant session as well as any in-app files saved during the previous session
 @callback(
     # Output: N/a; A dummy html div is supplied since each callback needs some sort of output
-    Output("page-load-trigger-output", "children"),
-    Input("page-load-trigger", "data")
+    Output("refresh-dummy", "children"),
+    Input("chat-refresh-button", "n_clicks")
 )
-def on_page_load(data):
-    if not data["is_loaded"]:
-        # Modify the data to mark it as loaded
-        data["is_loaded"] = True
+def on_page_load(clicks):
+    if clicks:
         assistant = Assistant(openai_api_key, assistant_id, None)
         assistant.initialize_client()
         #assistant.purge_files()
         assistant.purge_session_images()
-        return "Page loaded or refreshed!"
-    return "Page already loaded!"
+        return ""
+    return ""
+
+
+@callback(
+    Output("chat-option-attachments", "style"),
+    Input("sys-attach-btn", "n_clicks")
+)
+def toggle_checklist(n_clicks):
+    if n_clicks % 2 == 1:  # Show checklist on odd clicks
+        print('checkbox clicked')
+        return {'display': 'block'}
+    else:  # Hide checklist on even clicks
+        return {'display': 'none'}

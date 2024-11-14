@@ -22,35 +22,108 @@ body {
     top: 4em;
     left: 0;
     padding-right: 0;
-    height: calc(100vh - 4rem);
+    height: calc(100vh - 5rem);
     width: 50%;
     box-sizing: border-box;
 
 }
 
-.assistant-chat-area .chat-user-query-area {
+.assistant-chat-area .chat-user-query-area .chat-user-query-top-row {
     display: inline-flex;
     border-radius: 10px;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin-left: 2%;
     padding: 0%;
-    height: 12.5%;
+    height: 20.5%;
+    width:95%;
+    background-color: #ffff;
+}
+
+.assistant-chat-area .chat-user-query-area .chat-user-query-top-row .chat-button-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.assistant-chat-area .chat-user-query-area .chat-user-query-top-row .chat-submit-button {
+    display: inline-flex;
+    margin-top:4px;
+    border-radius:5px;
+    background-color: #24496b;
+    border: 0px;
+}
+
+.assistant-chat-area .chat-user-query-area .chat-user-query-top-row .chat-refresh-button {
+    display: inline-flex;
+    margin:1px;
+    border-radius:5px;
+    border: 0px;
+}
+
+.assistant-chat-area .chat-user-query-area .chat-user-query-top-row .chat-user-query-box {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    border-color: #ffff;
+    margin: 0%;
+    width: 95%;
+    height:50px;
+    resize: none;
+    font-size: 0.5em;
+}
+
+.assistant-chat-area .chat-user-query-area .chat-user-query-bottom-row {
+    display: inline-flex;
+    justify-content: flex-start;
+    margin: auto;
+    margin-left:0px;
+    gap: 0;
+    border-radius: 10px;
+    padding: 0%;
+    height: 4.5%;
     width:80%;
     background-color: #ffff;
 }
 
-.assistant-chat-area .chat-user-query-area .chat-user-query-box {
+.assistant-chat-area .chat-user-query-area .chat-user-query-area .chat {
     display: inline-flex;
-    border-radius: 10px;
-    border-color: #ffff;
-    margin: 0%;
-    width: 90%;
-    resize: none;
+    margin: auto;
+    }
+
+.chat-upload-attachment {
+    margin: 0; /* Remove any default margin */
+    padding: 0; /* Remove any default padding */
+    display: inline-flex;
+
 }
-.assistant-chat-area .chat-user-query-area .query-button {
+
+.attachment-drop-down {
+    position: absolute;
+    bottom: 10%; /* Position the checklist above the button */
+    left: 10;
+    background-color: #454545;
+    border: 1px solid #ccc;
+    padding: 10px;
+    z-index: 1000;
+    width: auto; /* Adjust width as necessary */
+    max-height: 200px; /* Set max height to prevent overflow */
+    overflow-y: auto;
+}
+
+.assistant-chat-area .chat-user-query-area {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: 10px;
+    margin-left: 10%;
+    margin-right: 5%;
+    padding: 0%;
+    height: 15.5%;
+    width:80%;
+    background-color: #ffff;
+}
+
+
+.assistant-chat-area .chat-user-query-area .chat-user-query-button {
     display: inline-flex;
-    margin: 2.5%;
-    padding: 1%;
     background-color: #24496b;
 }
 
@@ -101,7 +174,6 @@ body {
 
 }
 .chat-upload-attachment {
-    margin:auto;
 }
 
 attachment-drop-down-text{
