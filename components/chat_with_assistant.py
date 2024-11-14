@@ -190,11 +190,14 @@ def chat_bubble(participant, message):
 
 
 
-dialog_area = html.Div(id="chat-dialog",
+dialog_area = dcc.Loading(id='chat-loading',
+                          children=[html.Div(id="chat-dialog",
                        className="chat-assistant-dialog",
                        children=[
 
-                       ])
+                       ])])
+
+
 user_query_box= dbc.Textarea(id="chat-user-query-box",
                        placeholder="Ask your assistant a question",
                         size="sm",
@@ -347,7 +350,7 @@ layout = html.Div(
             Output(component_id="chat-user-query-box", component_property="value")
            ],
     # Direct input/trigger: "Submit" button click
-    Input( component_id="chat-submit-button", component_property="n_clicks"),
+    Input( component_id="chat-submit-btn", component_property="n_clicks"),
     # Indirect input: user query that was entered into query box
     [State(component_id="chat-user-query-box", component_property="value"),
      # Indirect input: attachments selected in attachment options dropdown
