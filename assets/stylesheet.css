@@ -22,7 +22,7 @@ body {
     top: 4em;
     left: 0;
     padding-right: 0;
-    height: calc(100vh - 5rem);
+    height: calc(100vh - 4rem);
     width: 50%;
     box-sizing: border-box;
 

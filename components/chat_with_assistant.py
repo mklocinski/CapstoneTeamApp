@@ -173,7 +173,8 @@ def chat_bubble(participant, message):
                                 )]
                               )
         elif participant == 'assistant':
-            bubble = dbc.Card(className="chat-bubble-assistant",
+            bubble = dcc.Loading(id="loading-bubble",
+                children=[dbc.Card(className="chat-bubble-assistant",
                                   children=[dbc.CardBody(
                                       [
                                         html.P(children=[message['text']]),
@@ -185,17 +186,16 @@ def chat_bubble(participant, message):
 
                                       ]
                                   )]
-                                  )
+                                  )])
         return bubble
 
 
 
-dialog_area = dcc.Loading(id='chat-loading',
-                          children=[html.Div(id="chat-dialog",
+dialog_area = html.Div(id="chat-dialog",
                        className="chat-assistant-dialog",
                        children=[
 
-                       ])])
+                       ])
 
 
 user_query_box= dbc.Textarea(id="chat-user-query-box",
