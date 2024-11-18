@@ -28,12 +28,14 @@ input_values = {key:Input(component_id=key, component_property="value") for key,
 @callback(
     Output(component_id="rai_parameters", component_property="data"),
     [Input(component_id="tools-menu-submit-rai-button", component_property="n_clicks")],
-    [State({"type": "callback_list", "index": ALL}, "value")],
+    [State({"type": "param_input", "index": ALL}, "value"),
+    State({"type": "param_input", "index": ALL}, "id")],
            allow_duplicate=True, prevent_initial_call=True
 )
-def update_rai_parameters(click, values):
+def update_rai_parameters(click, values, ids):
     if click:
         param_keys = list(element_values.keys())
         parameters = {key: val for key, val in zip(param_keys, values)}
+        print(parameters) # for debugging
         return parameters
     return dash.no_update

@@ -41,7 +41,6 @@ def update_map_parameters(click, values, ids):
     if click:
         # Create a dictionary mapping parameter codes to their user-input values
         parameters = {id["index"]: value for id, value in zip(ids, values)}
-
         print(parameters)  # For debugging
         return parameters  # This will return the parameters dictionary to "map_parameters" data
     return dash.no_update

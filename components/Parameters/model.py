@@ -173,5 +173,5 @@ def update_model_parameters(click, parameters, model1, model2, model3, model4, m
         parameters["lam"] = model6
         parameters["vf_iters"] = model7
         parameters["vf_stepsize"] = model8
-
+        print(parameters)
     return parameters

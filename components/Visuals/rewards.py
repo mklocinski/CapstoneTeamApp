@@ -76,7 +76,7 @@ def reward_trend_viewer(reward_data):
 def reward_view():
     div = html.Div(children=[
 
-                dcc.Graph(id="reward_viz", className="graph-object")
+                dcc.Graph(id="reward_viz", className="graph-object", style={'display':'none'})
     ])
     return div
 

@@ -17,7 +17,7 @@ standard_run_status = html.Div(children=[
                                className='model-loading-div'),
                             dcc.Interval(
                                     id="status-interval",
-                                    interval=2*1000,
+                                    interval=4*1000,
                                     n_intervals=0,
                                     disabled=True
                                 )])
@@ -38,15 +38,15 @@ current_episode = html.Div(children=[
                             ],
                            className="kpi-box")
 
-expected_completion = html.Div(children=[
-                            html.Div("Expected Completion", className="kpi-name"),
-                            html.Div("--", className="kpi-value")
+damaged_drones = html.Div(children=[
+                            html.Div("# Drones Damaged", className="kpi-name"),
+                            html.Div("--", className="kpi-value", id='damaged-drone-count')
                             ],
                            className="kpi-box")
 
-damage = html.Div(children=[
+total_damage = html.Div(children=[
                             html.Div("Total Damage", className="kpi-name"),
-                            html.Div("--", className="kpi-value")
+                            html.Div("--", className="kpi-value", id='total-damage-sum')
                             ],
                            className="kpi-box")
 
@@ -90,9 +90,9 @@ make_navbar = dbc.Navbar(
                 dbc.Col(width=1,
                         children=[current_episode]),
                 dbc.Col(width=1,
-                        children=[expected_completion]),
+                        children=[damaged_drones]),
                 dbc.Col(width=1,
-                        children=[damage]),
+                        children=[total_damage]),
                 dbc.Col(width=True,
                         children=[html.Div(children=["lol"])]),
                 dbc.Col(
@@ -208,13 +208,16 @@ def update_current_step(n_intervals, url):
     print(f"{url['api_url']}/model/current_episode")
     if response.status_code == 200:
         step = response.json().get("step")
+        print(f"success: {step}")
         return f"{step}"
     else:
         return "--"
 
 
 @callback(
-    Output("db-poller", "children"),
+    [Output("db-poller", "children"),
+     Output("damaged-drone-count", "children"),
+     Output("total-damage-sum", "children")],
     Input("db-interval", "n_intervals"),
     State("api_url", "data"),
     State("model-run-status", "data")# Assuming your API URL is stored here
@@ -223,7 +226,21 @@ def commit_db(n_intervals, url, status):
     response = requests.get(f"{url['api_url']}/database/commit")
     print(status)
     print(f"{url['api_url']}/database/commit")
-    return ""
+    print(response)
+    r_damage_count = requests.get(f"{url['api_url']}/database/last_run/drone_damage_count")
+    r_total_damage = requests.get(f"{url['api_url']}/database/last_run/total_drone_damage")
+    if r_damage_count.status_code == 200:
+        damage_count = r_damage_count.json().get("unique_drones_with_damage")
+    else:
+        damage_count = "0"
+
+    if r_total_damage.status_code == 200:
+        total_damage = r_total_damage.json().get("total_drone_damage")
+
+    else:
+        total_damage = "0"
+
+    return "", damage_count, total_damage
 
 
 @callback(
@@ -262,7 +279,7 @@ def update_current_status(n_intervals, url):
         elif status=="running":
             return html.Div(children=[html.I(id='running',
                                     className="bi bi-exclamation-circle-fill",
-                                   style={'color':'#3b3b3b',
+                                   style={'color':'#fec036',
                                           'font-size':'20px'}),
                                       dbc.Popover(
                                           "Running...",
@@ -280,7 +297,6 @@ def update_current_status(n_intervals, url):
                                           body=True,
                                           trigger="hover")]), {"run-status":"running"}
         elif status=="complete":
-            time.sleep(5)
             return html.Div(children=[html.I(id='complete',
                                     className="bi bi-check-circle-fill",
                                    style={'color':'green',

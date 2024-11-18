@@ -157,6 +157,8 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
         hoverinfo='text',
         text=obstacles.apply(lambda row: f"<b>Obstacle ID</b>: {row['obstacle_id']}<br>"
                                          f"<b>Obstacle Type</b>: {row['obstacle']}<br>"
+                                         f"<b>X-Coord</b>: {row['x_coord']}<br>"
+                                         f"<b>Y-Coord</b>: {row['y_coord']}<br>"
                                          f"<b>Obstacle Risk</b>: {row['obstacle_risk']}", axis=1)
     )
 
@@ -167,7 +169,7 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
         mode="markers",
         marker=dict(color="white", symbol="arrow-wide", size=20),
         text=df[df['episode_id'] == 0].apply(lambda
-                                                 row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f}",
+                                                 row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
                                              axis=1),
         hoverinfo='text',
         name="Drones"
@@ -195,16 +197,17 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
             mode="markers",
             marker=dict(color="white", symbol="arrow-wide", size=20),
             text=df[df['episode_id'] == i].apply(lambda
-                                                     row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f}",
+                                                     row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
                                                  axis=1),
             hoverinfo='text',
             name="Drones"
         )
         frames.append(go.Frame(data=[obstacle_trace, frame_data], name=str(i)))
     fig.frames = frames
-
     # Custom animation controls
     fig.update_layout(
+        hoverdistance=10,
+
         showlegend=False,
         updatemenus=[{
             'x': 0.15,
@@ -260,6 +263,110 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
     return fig
 
 
+
+def static_scatterplot(df, obstacles):
+    # Prepare obstacle colors
+    obstacle_colors = ["rgb" + str(col.replace("[", "(").replace("]", ")")) for col in obstacles['obstacle_color']]
+
+    # Static obstacle trace
+    obstacle_trace = go.Scatter(
+        x=obstacles['x_coord'],
+        y=obstacles['y_coord'],
+        mode="markers",
+        marker=dict(size=8, color=obstacle_colors, opacity=0.8),
+        name="Obstacles",
+        hoverinfo='text',
+        text=obstacles.apply(lambda row: f"<b>Obstacle ID</b>: {row['obstacle_id']}<br>"
+                                         f"<b>Obstacle Type</b>: {row['obstacle']}<br>"
+                                         f"<b>X-Coord</b>: {row['x_coord']}<br>"
+                                         f"<b>Y-Coord</b>: {row['y_coord']}<br>"
+                                         f"<b>Obstacle Risk</b>: {row['obstacle_risk']}", axis=1)
+    )
+
+    # Display drone positions for the final episode
+    final_episode = df['episode_id'].max()
+    drone_trace = go.Scatter(
+        x=df[df["episode_id"] == final_episode]["x_coord"],
+        y=df[df["episode_id"] == final_episode]["y_coord"],
+        mode="markers",
+        marker=dict(color="white", symbol="arrow-wide", size=20),
+        text=df[df['episode_id'] == final_episode].apply(lambda
+                                                              row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
+                                                          axis=1),
+        hoverinfo='text',
+        name="Drones"
+    )
+
+    # Create the figure
+    fig = go.Figure(
+        data=[obstacle_trace, drone_trace],
+        layout=go.Layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=0, r=0, t=0, b=0),
+            xaxis=dict(scaleanchor='y', constrain='domain', visible=False),
+            yaxis=dict(scaleanchor='x', constrain='domain', visible=False),
+            hoverdistance=10,
+            showlegend=False
+        )
+    )
+
+    return fig
+
+
+
+def swarm_scatterplot_with_obstacles2(df, obstacle_df):
+    # Initialize figure
+    fig = go.Figure()
+
+    # Add obstacle shapes
+    for obstacle_id, group in obstacle_df.groupby("obstacle_id"):
+        # Get color for this obstacle (converting from list format)
+        color = obstacle_df.loc[obstacle_df['obstacle_id'] == obstacle_id, 'obstacle_color'].iloc[0]
+        color_rgb = "rgb" + color.replace("[", "(").replace("]", ")")
+
+        # Get coordinates for the current obstacle
+        x_coords = group['x_coord'].tolist()
+        y_coords = group['y_coord'].tolist()
+
+        # Create the shape as a closed polygon
+        fig.add_shape(
+            type="path",
+            path=f'M {x_coords[0]},{y_coords[0]} ' + ' '.join(f'L {x},{y}' for x, y in zip(x_coords, y_coords)) + ' Z',
+            fillcolor=color_rgb,
+            opacity=0.5,
+            line=dict(width=0)
+        )
+
+    # Add drones as animated points
+    max_episode = df['episode_id'].max()
+    frames = []
+    for i in range(max_episode + 1):
+        frame_data = go.Scatter(
+            x=df[df["episode_id"] == i]["x_coord"],
+            y=df[df["episode_id"] == i]["y_coord"],
+            mode="markers",
+            marker=dict(color="white", symbol="arrow-wide", size=20),
+            text=df[df['episode_id'] == i].apply(lambda row: f"<b>Drone ID</b>: {row['drone_id']}", axis=1),
+            hoverinfo='text',
+            name="Drones"
+        )
+        frames.append(go.Frame(data=[frame_data], name=str(i)))
+
+    fig.frames = frames
+    fig.update_layout(
+        sliders=[{
+            'steps': [{'args': [[str(i)], {'frame': {'duration': 200, 'redraw': True}, 'mode': 'immediate'}],
+                       'label': str(i), 'method': 'animate'} for i in range(max_episode + 1)],
+            'currentvalue': {'prefix': 'Episode: '},
+        }],
+        updatemenus=[{'type': 'buttons', 'showactive': False,
+                      'buttons': [{'label': 'Play', 'method': 'animate', 'args': [None, {'frame': {'duration': 100}}]},
+                                  {'label': 'Pause', 'method': 'animate', 'args': [[None], {'mode': 'immediate'}]}]}]
+    )
+
+    return fig
+
 def swarm_view(df, map_df):
     div = html.Div(children=[
         dcc.Loading(
@@ -267,4 +374,21 @@ def swarm_view(df, map_df):
             children=[
                 dcc.Graph(figure=swarm_scatterplot_with_obstacles(df, map_df), className="graph-object")
     ])])
+    return div
+
+
+def no_playback(df, map_df):
+    div = html.Div(children=[
+        dcc.Loading(
+            id="static-swarm-movement-plot",
+            children=[
+                dcc.Graph(figure=static_scatterplot(df, map_df), className="graph-object")
+    ])])
+    return div
+
+def no_playback_view():
+    div = html.Div(children=[
+
+                dcc.Graph(id="static-swarm-movement-plot", className="graph-object", style={'display':'none'})
+    ])
     return div

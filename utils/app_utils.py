@@ -48,6 +48,7 @@ def create_user_inputs(param_type,
         p_type = row["Input Type"]
         d_type = row["Data Type"]
         phase = row["Phase"]
+        disabled = row["Disabled"]
 
         if d_type == 'int':
             el = html.Div(
@@ -58,7 +59,8 @@ def create_user_inputs(param_type,
                               min=json.loads(row["Valid Values"])[0],
                               max=json.loads(row["Valid Values"])[1],
                               step=row["Increment"],
-                              value=row["Default Value"])
+                              value=row["Default Value"],
+                              disabled=disabled)
                 ])
             element_list[phase].append(el)
             value_list[row["Parameter Code"]] = row["Default Value"]
@@ -71,30 +73,38 @@ def create_user_inputs(param_type,
                                 value=row["Default Value"],
                                 min=json.loads(row["Valid Values"])[0],
                                 max=json.loads(row["Valid Values"])[1],
-                                step=row["Increment"])
+                                step=row["Increment"],
+                              disabled=disabled)
                  ])
             element_list[phase].append(el)
             value_list[row["Parameter Code"]] = row["Default Value"]
 
         elif d_type == 'str':
-            vals = parameter_values[parameter_values["Parameter"] == title]["Value"]
+            vals = row["Valid Values"]
+            print(vals)
             el = html.Div(
                  children=[
                     html.P(title, className=class_name),
                     dcc.Dropdown(id=p_id,
                                  options=[{"label": val, "value": val} for val in vals],
-                                 value=vals.iloc[0])
+                                 value=vals.iloc[0] if "[" in vals else vals,
+                              disabled=disabled)
                  ])
             element_list[phase].append(el)
             value_list[row["Parameter Code"]] = row["Default Value"]
 
         elif d_type == 'bool':
+            if row["Disabled"]:
+                opts = [{"label": title, "value": row["Default Value"], 'disabled':True}]
+            else:
+                opts = [{"label": title, "value": row["Default Value"]}]
             el = html.Div(
                  children=[
-                        dbc.Checklist(id=p_id,
-                                options=[{"label": title, "value": row["Default Value"]}],
+                        dbc.Checklist(id=p_id['index'],
+                                options=opts,
                                  value=[row["Default Value"]],
-                                 switch=True)
+                                 switch=True,
+                              )
                  ])
             element_list[phase].append(el)
             value_list[row["Parameter Code"]] = row["Default Value"]

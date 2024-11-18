@@ -21,11 +21,11 @@ environment_params = {"environment_id": 'Rendezvous',
 }
 
 model_params = {"timesteps_per_batch": 10,
-                "max_kl": 0.01,
+                "max_kl": 0.02,
                 "cg_iters": 10,
                 "cg_damping": 0.1,
-                "gamma": 0.99,
-                "lam": 0.98,
+                "gamma": 0.95,
+                "lam": 0.95,
                 "vf_iters": 5,
                 "vf_stepsize": 0.001,}
 

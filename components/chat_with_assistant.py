@@ -391,6 +391,12 @@ layout = html.Div(
      State('api_url', 'data')]
         )
 def ask_assistant(click, query, opt_attachments, user_attachments, messages, chat_dialog, api_url):
+    attachment_descriptions = {'tbl_local_state':'The Local State table contains information on drone-specific data for each episode. It includes information on position, proximity to obstacles, and collisions.',
+                               'tbl_global_state': 'The Global State table contains fleet-level information for each episode.',
+                               'tbl_rewards': 'The Rewards table contains fleet-level reward information for each episode. The general reward value contains the mission rewards + any RAI penalties.',
+                               'tbl_drone_actions': 'The Drone Actions table contains drone-level position information for each episode.',
+                               'tbl_model_run_params': 'The Model Run Parameters table contains all user-entered parameters.',
+                               'tbl_model_runs': 'This is just a log table.'}
     # Check if there is an existing conversation *in the app*
     if chat_dialog is None:
         chat_dialog = []
@@ -406,6 +412,11 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
         # If there are no messages in in-app message memory, create initial dictionary
         if messages is None:
             messages = {"messages":[{"role": "system", "content": "hello"}]}
+        # If there are optional attachments, add attachment description
+        if opt_attachments:
+            for attachment in opt_attachments:
+                if attachment in attachment_descriptions:
+                    query += f"\n\n{attachment_descriptions[attachment]}"
         # If there are messages, append query
         messages["messages"].append({"role": "user", "content": query})
         # Check for user-added attachments (paperclip)------------------------------------------

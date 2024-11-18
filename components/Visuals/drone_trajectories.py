@@ -41,7 +41,8 @@ def trajectory_view(df):
                 ),
                 html.Div(id='hidden', children=df.to_json(orient='split'), hidden=True),
             dcc.Graph(id="drone-traj-plot",
-                          className="graph-object")])
+                          className="graph-object",
+                      style={'display' : 'none'})])
 
     return div
 
