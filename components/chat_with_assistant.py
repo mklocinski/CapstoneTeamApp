@@ -18,7 +18,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("ASSISTANT_ID")
 
 class Assistant:
-    def __init__(self, apikey, assistant_id, message_history, file_truncation=10):
+    def __init__(self, apikey, assistant_id, message_history, file_truncation=200000):
         self.apikey = apikey
         self.assistant_id = assistant_id
         self.client = None
