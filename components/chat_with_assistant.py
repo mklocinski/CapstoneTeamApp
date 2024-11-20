@@ -276,10 +276,20 @@ file_upload_tooltip = dbc.Tooltip(
             target="upload-attachment",
         )
 
-sys_attachment_checklist = dcc.Checklist(
-            id="chat-option-attachments",
+close_attachment = html.Button(children=['Close'],
+                               style={'font-size':8},
+                              id='chat-close-attach',
+                              className='chat-submit-button',
+                              n_clicks=0)
+
+sys_attachment_checklist = html.Div(id="chat-option-holder",
             className="attachment-drop-down",
-            labelClassName="attachment-drop-down-text",
+            style={'display': 'none'},
+    children= [
+    dcc.Checklist(
+            id="chat-option-attachments",
+            #className="attachment-drop-down",
+            #labelClassName="attachment-drop-down-text",
             options=[
                 {'label': 'Local State Data', 'value': 'tbl_local_state'},
                 {'label': 'Global State Data', 'value': 'tbl_global_state'},
@@ -289,9 +299,13 @@ sys_attachment_checklist = dcc.Checklist(
                 {'label': 'Model Runs', 'value': 'tbl_model_runs'}
             ],
             value=[],
-            labelStyle={'font-size':'0.75em'},
+            labelStyle={'font-size':'0.75em', 'color': 'white'},
         style={'display': 'none'}
-        )
+        ), close_attachment]
+
+)
+
+
 sys_attach = html.Div(
     id='system-attachment',
     className="chat-sys-attachment",
@@ -487,12 +501,26 @@ def on_page_load(clicks):
 
 
 @callback(
-    Output("chat-option-attachments", "style"),
-    Input("sys-attach-btn", "n_clicks")
+    [Output("chat-option-holder", "style"),
+     Output("chat-option-attachments", "style")],
+    Input("sys-attach-btn", "n_clicks"),
+    prevent_initial_call=True
 )
 def toggle_checklist(n_clicks):
-    if n_clicks % 2 == 1:  # Show checklist on odd clicks
+    if n_clicks:  # Show checklist on odd clicks
         print('checkbox clicked')
-        return {'display': 'block'}
-    else:  # Hide checklist on even clicks
-        return {'display': 'none'}
+        return {'display': 'block'}, {'display': 'block'}
+
+
+
+@callback(
+    [Output("chat-option-holder", "style", allow_duplicate=True),
+            Output("chat-option-attachments", "style", allow_duplicate=True)
+     ],
+    Input("chat-close-attach", "n_clicks"),
+    prevent_initial_call=True
+)
+def close_checklist(n_clicks):
+    if n_clicks:  # Show checklist on odd clicks
+        print('close button clicked')
+        return {'display': 'none'}, {'display': 'none'}
