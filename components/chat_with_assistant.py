@@ -386,9 +386,9 @@ layout = html.Div(
             # for the user query and assistant resposne
             Output(component_id="chat-dialog", component_property="children"),
             # Updates in-app chat message store with user query and assistant response
-            Output(component_id="chat-messages", component_property="data"),
+            Output(component_id="chat-messages", component_property="data", allow_duplicate=True),
             # Update Thread ID
-            Output("assistant-thread-id", "data"),
+            Output("assistant-thread-id", "data", allow_duplicate=True),
             # Clears query box
             Output(component_id="chat-user-query-box", component_property="value")
            ],
@@ -407,7 +407,8 @@ layout = html.Div(
      # Indirect input: Thread ID
     State("assistant-thread-id", "data"),
      # Indirect input: environment's API url
-     State('api_url', 'data')]
+     State('api_url', 'data')],
+        prevent_initial_call=True
         )
 def ask_assistant(click, query, opt_attachments, user_attachments, messages, chat_dialog, thread_id, api_url):
     attachment_descriptions = {'tbl_local_state':'The Local State table contains information on drone-specific data for each episode. It includes information on position, proximity to obstacles, and collisions.',
@@ -422,7 +423,7 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
     # Check if the user has clicked "Submit"
     if click == 0:
         # If not, return an empty dialog area, existing messages thread, and query box contents
-        return chat_dialog, messages, query
+        return chat_dialog, messages, thread_id, query
     else:
         print("button clicked") # for debugging
         # Initialize Assistant (see class definition above) ------------------------------------
@@ -493,13 +494,13 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
 #Purges previous Assistant session as well as any in-app files saved during the previous session
 @callback(
         [
-        Output("assistant-thread-id", "data"),
-        Output("chat-messages", "data"),
+        Output("assistant-thread-id", "data", allow_duplicate=True),
+        Output("chat-messages", "data", allow_duplicate=True),
         Output("refresh-dummy", "children"),
         ],
     # Output: N/a; A dummy html div is supplied since each callback needs some sort of output
-    Output("refresh-dummy", "children"),
-    Input("chat-refresh-button", "n_clicks")
+    Input("chat-refresh-button", "n_clicks"),
+        prevent_initial_call=True
 )
 def on_page_load(clicks):
     if clicks:

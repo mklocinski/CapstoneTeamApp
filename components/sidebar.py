@@ -2,6 +2,7 @@ from dash import html, callback, Input, Output, State
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 from utils import text
+import requests
 
 sidebar_title = html.H2(
     id="sidebar_title", children=[text.run_page_sidebar_title]
