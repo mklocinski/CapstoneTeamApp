@@ -48,7 +48,7 @@ def create_user_inputs(param_type,
         p_type = row["Input Type"]
         d_type = row["Data Type"]
         phase = row["Phase"]
-        disabled = row["Disabled"]
+        disabled = True if row["Disabled"] == "TRUE" else False
 
         if d_type == 'int':
             el = html.Div(
@@ -94,7 +94,7 @@ def create_user_inputs(param_type,
             value_list[row["Parameter Code"]] = row["Default Value"]
 
         elif d_type == 'bool':
-            if row["Disabled"]:
+            if disabled:
                 opts = [{"label": title, "value": row["Default Value"], 'disabled':True}]
             else:
                 opts = [{"label": title, "value": row["Default Value"]}]
