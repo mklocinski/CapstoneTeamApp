@@ -220,7 +220,7 @@ def update_current_step(n_intervals, url):
      Output("total-damage-sum", "children")],
     Input("db-interval", "n_intervals"),
     State("api_url", "data"),
-    State("model-run-status", "data")# Assuming your API URL is stored here
+    State("model-run-status", "data")
 )
 def commit_db(n_intervals, url, status):
     response = requests.get(f"{url['api_url']}/database/commit")
@@ -229,18 +229,21 @@ def commit_db(n_intervals, url, status):
     print(response)
     r_damage_count = requests.get(f"{url['api_url']}/database/last_run/drone_damage_count")
     r_total_damage = requests.get(f"{url['api_url']}/database/last_run/total_drone_damage")
-    if r_damage_count.status_code == 200:
-        damage_count = r_damage_count.json().get("unique_drones_with_damage")
+    if status == "running":
+        if r_damage_count.status_code == 200:
+            damage_count = r_damage_count.json().get("unique_drones_with_damage")
+        else:
+            damage_count = "0"
+
+        if r_total_damage.status_code == 200:
+            total_damage = r_total_damage.json().get("total_drone_damage")
+
+        else:
+            total_damage = "0"
+
+        return "", damage_count, total_damage
     else:
-        damage_count = "0"
-
-    if r_total_damage.status_code == 200:
-        total_damage = r_total_damage.json().get("total_drone_damage")
-
-    else:
-        total_damage = "0"
-
-    return "", damage_count, total_damage
+        return "", "0", "0"
 
 
 @callback(

@@ -145,14 +145,25 @@ def swarm_scatterplot(df, map_df):
 
 
 def swarm_scatterplot_with_obstacles(df, obstacles):
+    def get_marker_line(df_subset):
+        return dict(
+            color=["red" if collision > 0 else "black" for collision in df_subset['drone_collisions']],
+            width=2
+        )
+
+    # Prepare obstacle colors and dynamic opacity for obstacles
     obstacle_colors = ["rgb" + str(col.replace("[", "(").replace("]", ")")) for col in obstacles['obstacle_color']]
+    obstacle_opacity = [
+        0.0 if (row["obstacle"] == "fires" and row["point_type"] == "interior" or row["point_type"] == "midpoint") else 0.8
+        for i, row in obstacles.iterrows()
+    ]
 
     # Static obstacle trace
     obstacle_trace = go.Scatter(
         x=obstacles['x_coord'],
         y=obstacles['y_coord'],
         mode="markers",
-        marker=dict(size=8, color=obstacle_colors, opacity=0.8),
+        marker=dict(size=8, color=obstacle_colors, opacity=obstacle_opacity),
         name="Obstacles",
         hoverinfo='text',
         text=obstacles.apply(lambda row: f"<b>Obstacle ID</b>: {row['obstacle_id']}<br>"
@@ -167,7 +178,7 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
         x=df[df["episode_id"] == 0]["x_coord"],
         y=df[df["episode_id"] == 0]["y_coord"],
         mode="markers",
-        marker=dict(color="white", symbol="arrow-wide", size=20),
+        marker=dict(color="white", symbol="arrow-wide", size=20, line=get_marker_line(df[df["episode_id"] == 0])),
         text=df[df['episode_id'] == 0].apply(lambda
                                                  row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
                                              axis=1),
@@ -191,14 +202,20 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
     frames = []
     max_episode = df['episode_id'].max()
     for i in range(max_episode + 1):
+        frame_df = df[df["episode_id"] == i]
         frame_data = go.Scatter(
-            x=df[df["episode_id"] == i]["x_coord"],
-            y=df[df["episode_id"] == i]["y_coord"],
+            x=frame_df["x_coord"],
+            y=frame_df["y_coord"],
             mode="markers",
-            marker=dict(color="white", symbol="arrow-wide", size=20),
-            text=df[df['episode_id'] == i].apply(lambda
-                                                     row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
-                                                 axis=1),
+            marker=dict(
+                color="white",
+                symbol="arrow-wide",
+                size=20,
+                line=get_marker_line(frame_df)  # Adjust line colors dynamically
+            ),
+            text=frame_df.apply(lambda
+                                    row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
+                                axis=1),
             hoverinfo='text',
             name="Drones"
         )
@@ -263,17 +280,20 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
     return fig
 
 
-
 def static_scatterplot(df, obstacles):
     # Prepare obstacle colors
     obstacle_colors = ["rgb" + str(col.replace("[", "(").replace("]", ")")) for col in obstacles['obstacle_color']]
 
+    obstacle_opacity = [
+        0.0 if (row["obstacle"] == "fires" and row["point_type"] == "interior" or row["point_type"] == "midpoint") else 0.8
+        for i, row in obstacles.iterrows()
+    ]
     # Static obstacle trace
     obstacle_trace = go.Scatter(
         x=obstacles['x_coord'],
         y=obstacles['y_coord'],
         mode="markers",
-        marker=dict(size=8, color=obstacle_colors, opacity=0.8),
+        marker=dict(size=8, color=obstacle_colors, opacity=obstacle_opacity),
         name="Obstacles",
         hoverinfo='text',
         text=obstacles.apply(lambda row: f"<b>Obstacle ID</b>: {row['obstacle_id']}<br>"
@@ -283,16 +303,30 @@ def static_scatterplot(df, obstacles):
                                          f"<b>Obstacle Risk</b>: {row['obstacle_risk']}", axis=1)
     )
 
+    # Function to dynamically set marker borders
+    def get_marker_line(df_subset):
+        return dict(
+            color=["red" if collision > 0 else "black" for collision in df_subset['drone_collisions']],
+            width=2  # Border width
+        )
+
     # Display drone positions for the final episode
     final_episode = df['episode_id'].max()
+    final_df = df[df["episode_id"] == final_episode]
+
     drone_trace = go.Scatter(
-        x=df[df["episode_id"] == final_episode]["x_coord"],
-        y=df[df["episode_id"] == final_episode]["y_coord"],
+        x=final_df["x_coord"],
+        y=final_df["y_coord"],
         mode="markers",
-        marker=dict(color="white", symbol="arrow-wide", size=20),
-        text=df[df['episode_id'] == final_episode].apply(lambda
-                                                              row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
-                                                          axis=1),
+        marker=dict(
+            color="white",
+            symbol="arrow-wide",
+            size=20,
+            line=get_marker_line(final_df)  # Adjust line color dynamically
+        ),
+        text=final_df.apply(lambda
+                                row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
+                            axis=1),
         hoverinfo='text',
         name="Drones"
     )
@@ -312,7 +346,6 @@ def static_scatterplot(df, obstacles):
     )
 
     return fig
-
 
 
 def swarm_scatterplot_with_obstacles2(df, obstacle_df):
