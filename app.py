@@ -38,12 +38,13 @@ chat_data = config.chat_params
 app.layout = html.Div(
             children=[
             dcc.Store(id='api_url',
-                      data = {"api_url":"https://xraiapi-ba66c372be3f.herokuapp.com"}),
+                      data = {"api_url":"http://localhost:8000"}),
             # "http://127.0.0.1:5000"
             # "http://localhost:8000"
             # "https://xraiapi-ba66c372be3f.herokuapp.com"
             dcc.Store(id='drone-data'),
             dcc.Store(id='chat-messages'),
+            dcc.Store(id="assistant-thread-id", data=None),
             dcc.Store(id='model-run-status',
                       data = config.model_run_status),
             dcc.Store(id='map_parameters',

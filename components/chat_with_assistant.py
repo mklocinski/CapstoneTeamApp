@@ -1,4 +1,4 @@
-from dash import html, callback, Input, Output, State, dcc
+from dash import html, callback, Input, Output, State, dcc, dash
 import dash_bootstrap_components as dbc
 from utils import text
 from openai import OpenAI
@@ -10,6 +10,7 @@ import base64
 import io
 from PIL import Image
 from io import BytesIO
+
 
 # ------------------------------------------------------------------ #
 # --------------------- Assistant Interaction ---------------------- #
@@ -386,6 +387,8 @@ layout = html.Div(
             Output(component_id="chat-dialog", component_property="children"),
             # Updates in-app chat message store with user query and assistant response
             Output(component_id="chat-messages", component_property="data"),
+            # Update Thread ID
+            Output("assistant-thread-id", "data"),
             # Clears query box
             Output(component_id="chat-user-query-box", component_property="value")
            ],
@@ -401,10 +404,12 @@ layout = html.Div(
     State(component_id="chat-messages", component_property="data"),
      # Indirect input: chat area (i.e. bubbles)
      State(component_id="chat-dialog", component_property="children"),
+     # Indirect input: Thread ID
+    Output("assistant-thread-id", "data"),
      # Indirect input: environment's API url
      State('api_url', 'data')]
         )
-def ask_assistant(click, query, opt_attachments, user_attachments, messages, chat_dialog, api_url):
+def ask_assistant(click, query, opt_attachments, user_attachments, messages, chat_dialog, thread_id, api_url):
     attachment_descriptions = {'tbl_local_state':'The Local State table contains information on drone-specific data for each episode. It includes information on position, proximity to obstacles, and collisions.',
                                'tbl_global_state': 'The Global State table contains fleet-level information for each episode.',
                                'tbl_rewards': 'The Rewards table contains fleet-level reward information for each episode. The general reward value contains the mission rewards + any RAI penalties.',
@@ -423,6 +428,8 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
         # Initialize Assistant (see class definition above) ------------------------------------
         assistant = Assistant(openai_api_key, assistant_id, messages)
         assistant.initialize_client()
+        # If there is no thread_id, the logic in Assistant.generate_response() will create a new one
+        assistant.thread_id = thread_id
         # If there are no messages in in-app message memory, create initial dictionary
         if messages is None:
             messages = {"messages":[{"role": "system", "content": "hello"}]}
@@ -481,10 +488,15 @@ def ask_assistant(click, query, opt_attachments, user_attachments, messages, cha
         assistant.purge_image_paths()
         # Return dialog area updated with chat bubbles; in-app message store updated with
         # recent query and response; and an empty string to the query box (to clear out last query)
-        return chat_dialog, messages, ""
+        return chat_dialog, messages, assistant.thread_id, ""
 
 #Purges previous Assistant session as well as any in-app files saved during the previous session
 @callback(
+        [
+        Output("assistant-thread-id", "data"),
+        Output("chat-messages", "data"),
+        Output("refresh-dummy", "children"),
+        ],
     # Output: N/a; A dummy html div is supplied since each callback needs some sort of output
     Output("refresh-dummy", "children"),
     Input("chat-refresh-button", "n_clicks")
@@ -495,9 +507,9 @@ def on_page_load(clicks):
         assistant.initialize_client()
         assistant.purge_files()
         assistant.purge_session_images()
-        print("purged")
-        return ""
-    return ""
+        print("Assistant session reset.")
+        return None, None, ""
+    return dash.no_update, dash.no_update, ""
 
 
 @callback(
