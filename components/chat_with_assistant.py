@@ -405,7 +405,7 @@ layout = html.Div(
      # Indirect input: chat area (i.e. bubbles)
      State(component_id="chat-dialog", component_property="children"),
      # Indirect input: Thread ID
-    Output("assistant-thread-id", "data"),
+    State("assistant-thread-id", "data"),
      # Indirect input: environment's API url
      State('api_url', 'data')]
         )
