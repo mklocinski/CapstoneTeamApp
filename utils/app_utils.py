@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import json
@@ -33,6 +34,26 @@ param_path = os.path.join("assets", "XRAI System - User Parameters.xlsx")
 parameters = pd.read_excel(param_path,  sheet_name="Parameters")
 parameter_values = pd.read_excel(param_path, sheet_name="Parameter Values")
 
+def map_param_conversion(map_params):
+    converted_dict = {}
+    for key, values in map_params.items():
+        if key not in converted_dict:
+            converted_dict[key] = {}
+        for param, val in map_params[key].items():
+            if "number_of_" in param:
+                converted_dict[key]["count"] = val
+            elif "random_" in param:
+                converted_dict[key]["random"] = val
+            elif "_midpoint" in param:
+                converted_dict[key]["positions"] = [val]
+            elif "_size" in param:
+                converted_dict[key]["sizes"] = [val]
+            elif "_damage" in param:
+                converted_dict[key]["damage"] = val
+    return converted_dict
+
+
+
 def create_user_inputs(param_type,
                        parameter_df=parameters,
                        parameter_values=parameter_values,
@@ -40,11 +61,14 @@ def create_user_inputs(param_type,
     df = parameter_df[parameter_df["Parameter Type"] == param_type]
     element_list = {phase: [] for phase in df["Phase"].unique()}
     value_list = {}
-
     for i, row in df.iterrows():
         title = row["Parameter"]
         class_name = title_class
-        p_id = {"type": "param_input", "index": row["Parameter Code"]}
+        if not pd.isnull(row["Parameter Group"]):
+            p_id = {"type": row["Parameter Type"], "index": row["Parameter Code"], "category": row["Parameter Group"]}
+        else:
+            p_id = {"type": row["Parameter Type"], "index": row["Parameter Code"]}
+
         p_type = row["Input Type"]
         d_type = row["Data Type"]
         phase = row["Phase"]
@@ -63,7 +87,12 @@ def create_user_inputs(param_type,
                               disabled=disabled)
                 ])
             element_list[phase].append(el)
-            value_list[row["Parameter Code"]] = row["Default Value"]
+            if not pd.isnull(row["Parameter Group"]):
+                if row["Parameter Group"] not in value_list:
+                    value_list[row["Parameter Group"]] = {}
+                value_list[row["Parameter Group"]][row["Parameter Code"]] = row["Default Value"]
+            else:
+                value_list[row["Parameter Code"]] = row["Default Value"]
 
         elif d_type == 'flt':
             el = html.Div(
@@ -77,11 +106,14 @@ def create_user_inputs(param_type,
                               disabled=disabled)
                  ])
             element_list[phase].append(el)
-            value_list[row["Parameter Code"]] = row["Default Value"]
-
+            if not pd.isnull(row["Parameter Group"]):
+                if row["Parameter Group"] not in value_list:
+                    value_list[row["Parameter Group"]] = {}
+                value_list[row["Parameter Group"]][row["Parameter Code"]] = row["Default Value"]
+            else:
+                value_list[row["Parameter Code"]] = row["Default Value"]
         elif d_type == 'str':
             vals = row["Valid Values"]
-            print(vals)
             el = html.Div(
                  children=[
                     html.P(title, className=class_name),
@@ -91,7 +123,12 @@ def create_user_inputs(param_type,
                               disabled=disabled)
                  ])
             element_list[phase].append(el)
-            value_list[row["Parameter Code"]] = row["Default Value"]
+            if not pd.isnull(row["Parameter Group"]):
+                if row["Parameter Group"] not in value_list:
+                    value_list[row["Parameter Group"]] = {}
+                value_list[row["Parameter Group"]][row["Parameter Code"]] = row["Default Value"]
+            else:
+                value_list[row["Parameter Code"]] = row["Default Value"]
 
         elif d_type == 'bool':
             if disabled:
@@ -100,14 +137,20 @@ def create_user_inputs(param_type,
                 opts = [{"label": title, "value": row["Default Value"]}]
             el = html.Div(
                  children=[
-                        dbc.Checklist(id=p_id['index'],
+                        dbc.Checklist(id=p_id,
                                 options=opts,
                                  value=[row["Default Value"]],
                                  switch=True,
                               )
                  ])
             element_list[phase].append(el)
-            value_list[row["Parameter Code"]] = row["Default Value"]
-
-    return {'values': value_list, 'elements': element_list}
+            if not pd.isnull(row["Parameter Group"]):
+                if row["Parameter Group"] not in value_list:
+                    value_list[row["Parameter Group"]] = {}
+                value_list[row["Parameter Group"]][row["Parameter Code"]] = row["Default Value"]
+            else:
+                value_list[row["Parameter Code"]] = row["Default Value"]
+    vals = value_list if row["Parameter Type"] != "Map" else map_param_conversion(value_list)
+    print(vals)
+    return {'values': vals, 'elements': element_list}
 

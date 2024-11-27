@@ -33,15 +33,23 @@ input_values = {key:Input(component_id=key, component_property="value") for key,
 @callback(
     Output("map_parameters", "data"),
     Input("tools-menu-submit-map-button", "n_clicks"),
-    State({"type": "param_input", "index": ALL}, "value"),
-    State({"type": "param_input", "index": ALL}, "id"),
+    State({"type": "Map", "index": ALL, "category": ALL}, "value"),
+    State({"type": "Map", "index": ALL, "category": ALL}, "id"),
     prevent_initial_call=True
 )
 def update_map_parameters(click, values, ids):
     if click:
         # Create a dictionary mapping parameter codes to their user-input values
-        parameters = {id["index"]: value for id, value in zip(ids, values)}
-        print(parameters)  # For debugging
-        return parameters  # This will return the parameters dictionary to "map_parameters" data
+        parameters = {}
+        for id, value in zip(ids, values):
+            category = id.get("category")
+            index = id["index"]
+            if category not in parameters:
+                parameters[category] = {}
+            parameters[category][index] = value
+        print(parameters) # For debugging
+        modified_parameters = app_utils.map_param_conversion(parameters)
+        print(modified_parameters)
+        return modified_parameters  # This will return the parameters dictionary to "map_parameters" data
     return dash.no_update
 

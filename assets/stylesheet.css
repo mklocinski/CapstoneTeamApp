@@ -67,7 +67,7 @@ body {
     width: 95%;
     height:50px;
     resize: none;
-    font-size: 0.85em;
+    font-size: 1.25em;
 }
 
 .assistant-chat-area .chat-user-query-area .chat-user-query-bottom-row {
@@ -128,7 +128,7 @@ body {
 }
 
 .assistant-chat-area .chat-assistant-description {
-    font-size: 0.75rem;
+    font-size: 1.25rem;
     margin-left: 10%;
 }
 
@@ -170,14 +170,14 @@ body {
 .attachment-drop-down {
     padding: 5%;
     margin:auto;
-    font-size=0.25em;
+    font-size=0.5em;
 
 }
 .chat-upload-attachment {
 }
 
 attachment-drop-down-text{
-    font-size=0.25em;
+    font-size=0.5em;
     }
 /* -------------------------------------------------------------------- */
 /* ------------------- Collapsed Sidebar Elements --------------------- */
@@ -271,7 +271,7 @@ attachment-drop-down-text{
 
     padding: 5px;
     font-color: #e5ecf2;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 /* -------------------------------------------------------------------- */
@@ -322,7 +322,7 @@ attachment-drop-down-text{
 
 .player-buttons{
     display: inline-block;
-    font-size: 0.5rem;
+    font-size: 0.75rem;
     color: black;
     background-color: #4d4d4d;
     border-color: #4d4d4d !important;
@@ -338,12 +338,12 @@ attachment-drop-down-text{
 
 
 .kpi-box .kpi-name{
-    font-size: 0.5rem;
+    font-size: 0.75rem;
     color: #6b6a6a;
 }
 
 .kpi-box .kpi-value{
-    font-size: 1rem;
+    font-size: 1.25rem;
     color: #6b6a6a;
 }
 

@@ -5,9 +5,63 @@ import time
 import requests
 
 
+def make_status_icon(status):
+    if status == "idle":
+        return html.Div(children=[html.I(id='idle',
+                                         className="bi bi-question-octagon-fill",
+                                         style={'color': 'gray',
+                                                'font-size': '20px'}),
+                                  dbc.Popover(
+                                      "Idle",
+                                      target="idle",
+                                      body=True,
+                                      trigger="hover")],
+                        style={'margin': 'auto'}), {"run-status": "off"}
+    elif status == "initializing":
+        return html.Div(children=[html.I(id='initializing',
+                                         className="bi bi-list-check",
+                                         style={'color': 'yellow',
+                                                'font-size': '20px'}),
+                                  dbc.Popover(
+                                      "Initializing...",
+                                      target="initializing",
+                                      body=True,
+                                      trigger="hover")]), {"run-status": "running"}
+    elif status == "running":
+        return html.Div(children=[html.I(id='running',
+                                         className="bi bi-exclamation-circle-fill",
+                                         style={'color': '#fec036',
+                                                'font-size': '20px'}),
+                                  dbc.Popover(
+                                      "Running...",
+                                      target="running",
+                                      body=True,
+                                      trigger="hover")]), {"run-status": "running"}
+    elif status == "pause":
+        return html.Div(children=[html.I(id='paused',
+                                         className="bi bi-stopwatch-fill",
+                                         style={'color': 'gray',
+                                                'font-size': '20px'}),
+                                  dbc.Popover(
+                                      "Model paused",
+                                      target="paused",
+                                      body=True,
+                                      trigger="hover")]), {"run-status": "running"}
+    elif status == "complete":
+        return html.Div(children=[html.I(id='complete',
+                                         className="bi bi-check-circle-fill",
+                                         style={'color': 'green',
+                                                'font-size': '20px'}),
+                                  dbc.Popover(
+                                      "Model run complete",
+                                      target="complete",
+                                      body=True,
+                                      trigger="hover")]), {"run-status": "off"}
+
+
 run_model = dbc.Button('Run Model', id='standard-run', n_clicks=0,
                                color="secondary", className="me-1",
-                       size="sm", style={'font-size':'0.75em',
+                       size="sm", style={'font-size':'1em',
                                          'width':'100%',
                                          'height':'100%'}
                        )
@@ -50,6 +104,7 @@ total_damage = html.Div(children=[
                             ],
                            className="kpi-box")
 
+refresh_trigger = dcc.Location(id="refresh-trigger")
 make_navbar = dbc.Navbar(
     dbc.Container(
         dbc.Row(
@@ -57,6 +112,7 @@ make_navbar = dbc.Navbar(
                 dbc.Col(run_model,
                         width=1),
                 dbc.Col(children=[
+                        refresh_trigger,
                         html.Div(children=[
                             dbc.Button(
                                 n_clicks=0,
@@ -201,17 +257,21 @@ def play_live_model(clicks, url):
 @callback(
     Output("current-episode-value", "children"),
     Input("episode-interval", "n_intervals"),
-    State("api_url", "data")  # Assuming your API URL is stored here
+    State("api_url", "data"),
+    State("model-run-status", "data")# Assuming your API URL is stored here
 )
-def update_current_step(n_intervals, url):
-    response = requests.get(f"{url['api_url']}/model/current_episode")
-    print(f"{url['api_url']}/model/current_episode")
-    if response.status_code == 200:
-        step = response.json().get("step")
-        print(f"success: {step}")
-        return f"{step}"
+def update_current_step(n_intervals, url, status):
+    if status["run-status"] == "running":
+        response = requests.get(f"{url['api_url']}/model/current_episode")
+        print(f"{url['api_url']}/model/current_episode")
+        if response.status_code == 200:
+            step = response.json().get("step")
+            print(f"success: {step}")
+            return f"{step}"
+        else:
+            return "--"
     else:
-        return "--"
+            return "0"
 
 
 @callback(
@@ -251,65 +311,31 @@ def commit_db(n_intervals, url, status):
     Output("model-run-status", "data"),
     Input("status-interval", "n_intervals"),
     State("api_url", "data"),
+prevent_initial_call=True
 )
 def update_current_status(n_intervals, url):
     response = requests.get(f"{url['api_url']}/model/status")
     print(f"{url['api_url']}/model/status")
     if response.status_code == 200:
         status = response.json().get("status")
-        print(status)
-        if status=="idle":
-            return html.Div(children=[html.I(id='idle',
-                                    className="bi bi-question-octagon-fill",
-                                   style={'color':'gray',
-                                          'font-size':'20px'}),
-                                      dbc.Popover(
-                                          "Idle",
-                                          target="idle",
-                                          body=True,
-                                          trigger="hover")],
-                            style={'margin':'auto'}), {"run-status":"off"}
-        elif status=="initializing":
-            return html.Div(children=[html.I(id='initializing',
-                                    className="bi bi-list-check",
-                                   style={'color':'yellow',
-                                          'font-size':'20px'}),
-                                      dbc.Popover(
-                                          "Initializing...",
-                                          target="initializing",
-                                          body=True,
-                                          trigger="hover")]), {"run-status":"running"}
-        elif status=="running":
-            return html.Div(children=[html.I(id='running',
-                                    className="bi bi-exclamation-circle-fill",
-                                   style={'color':'#fec036',
-                                          'font-size':'20px'}),
-                                      dbc.Popover(
-                                          "Running...",
-                                          target="running",
-                                          body=True,
-                                          trigger="hover")]), {"run-status":"running"}
-        elif status=="pause":
-            return html.Div(children=[html.I(id='paused',
-                                    className="bi bi-stopwatch-fill",
-                                   style={'color':'gray',
-                                          'font-size':'20px'}),
-                                      dbc.Popover(
-                                          "Model paused",
-                                          target="paused",
-                                          body=True,
-                                          trigger="hover")]), {"run-status":"running"}
-        elif status=="complete":
-            return html.Div(children=[html.I(id='complete',
-                                    className="bi bi-check-circle-fill",
-                                   style={'color':'green',
-                                          'font-size':'20px'}),
-                                      dbc.Popover(
-                                          "Model run complete",
-                                          target="complete",
-                                          body=True,
-                                          trigger="hover")]), {"run-status":"off"}
+        print(f"Status: {status}")
+        return make_status_icon(status)
     else:
         return "--", {"run-status":"off"}
 
 
+@callback(Output("run-progress-text", "children", allow_duplicate=True),
+    Output("model-run-status", "data", allow_duplicate=True),
+          Input("refresh-trigger", "href"),
+            State("api_url", "data"),
+prevent_initial_call=True)
+def refresh_page(refresh, url):
+    if refresh is None:
+        raise dash.exceptions.PreventUpdate
+    if refresh:
+        response = requests.get(f"{url['api_url']}/model/status")
+        print(f"{url['api_url']}/model/status")
+        if response.status_code == 200:
+            status = response.json().get("status")
+            print(f"Startup Status: {status}")
+            return make_status_icon(status)

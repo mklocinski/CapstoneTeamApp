@@ -144,6 +144,8 @@ def swarm_scatterplot(df, map_df):
     return fig
 
 
+
+
 def swarm_scatterplot_with_obstacles(df, obstacles):
     def get_marker_line(df_subset):
         return dict(
@@ -151,54 +153,147 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
             width=2
         )
 
-    # Prepare obstacle colors and dynamic opacity for obstacles
-    obstacle_colors = ["rgb" + str(col.replace("[", "(").replace("]", ")")) for col in obstacles['obstacle_color']]
-    obstacle_opacity = [
-        0.0 if (row["obstacle"] == "fires" and row["point_type"] == "interior" or row["point_type"] == "midpoint") else 0.8
-        for i, row in obstacles.iterrows()
-    ]
+    # Create the figure
+    fig = go.Figure(layout=go.Layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=0, r=0, t=0, b=0),
+            xaxis=dict(scaleanchor='y', constrain='domain', visible=False),
+            yaxis=dict(scaleanchor='x', constrain='domain', visible=False),
+        ))
+    print("Swarm Visualization")
+    trace_list = []
 
-    # Static obstacle trace
-    obstacle_trace = go.Scatter(
-        x=obstacles['x_coord'],
-        y=obstacles['y_coord'],
-        mode="markers",
-        marker=dict(size=8, color=obstacle_colors, opacity=obstacle_opacity),
-        name="Obstacles",
-        hoverinfo='text',
-        text=obstacles.apply(lambda row: f"<b>Obstacle ID</b>: {row['obstacle_id']}<br>"
-                                         f"<b>Obstacle Type</b>: {row['obstacle']}<br>"
-                                         f"<b>X-Coord</b>: {row['x_coord']}<br>"
-                                         f"<b>Y-Coord</b>: {row['y_coord']}<br>"
-                                         f"<b>Obstacle Risk</b>: {row['obstacle_risk']}", axis=1)
-    )
+    print("Swarm Visualization")
+    # Plot static obstacles
+    if obstacles is not None and not obstacles.empty and isinstance(obstacles, pd.DataFrame):
+        for _, row in obstacles.iterrows():
+            color = f"rgb{row['obstacle_color'].replace('[', '(').replace(']', ')')}"
+            print(f"Processed Color: {color} for Obstacle: {row['obstacle_shape']}")
+            shape_type = row['obstacle_shape']
+            x_center = row['midpoint_x_coord']
+            y_center = row['midpoint_y_coord']
 
-    # Initial frame for drones
+
+            if shape_type == 'rect':
+                bottom_left = eval(row['bottom_left'])
+                top_right = eval(row['top_right'])
+
+                x0, y0 = bottom_left
+                x1, y1 = top_right
+
+                if row["obstacle"] == "no-fly":
+                    trace_list.append(
+                        go.Scatter(
+                            x=[x0, x1, x1, x0, x0],
+                            y=[y0, y0, y1, y1, y0],
+                            fill="toself",
+                            fillcolor=color,
+                            line=dict(color=color, width=2),
+                            mode="lines",
+                            opacity=0.1,
+                            name=row["obstacle"].title(),
+                        )
+                    )
+                else:
+                    trace_list.append(
+                        go.Scatter(
+                            x=[x0, x1, x1, x0, x0],
+                            y=[y0, y0, y1, y1, y0],
+                            fill="toself",
+                            fillcolor=color,
+                            line=dict(color=color, width=2),
+                            mode="lines",
+                            opacity=0.8,
+                            name = row["obstacle"].title(),
+                        )
+                    )
+
+            elif shape_type == 'circle':
+                top_right = eval(row['top_right'])
+                bottom_left = eval(row['bottom_left'])
+                x0, y0 = bottom_left
+                x1, y1 = top_right
+
+                radius = (x1 - x0)/2
+
+                # Circle traces need to be approximated using Scatter
+                circle_x = [x_center + radius * np.cos(theta) for theta in np.linspace(0, 2 * np.pi, 100)]
+                circle_y = [y_center + radius * np.sin(theta) for theta in np.linspace(0, 2 * np.pi, 100)]
+
+                if row["obstacle"] == "fires":
+                    trace_list.append(
+                        go.Scatter(
+                            x=circle_x,
+                            y=circle_y,
+                            line=dict(color=color, width=2, dash="dash"),
+                            mode="lines",
+                            opacity=0.8,
+                            name=row["obstacle"].title(),
+                        )
+                    )
+                else:
+                    trace_list.append(
+                        go.Scatter(
+                            x=circle_x,
+                            y=circle_y,
+                            fill="toself",
+                            fillcolor=color,
+                            line=dict(color=color, width=2),
+                            mode="lines",
+                            opacity=0.8,
+                            name=row["obstacle"].title(),
+                        )
+                    )
+
+
+            elif shape_type == 'polygon':
+                bottom_left = eval(row['bottom_left'])
+                bottom_right = eval(row['bottom_right'])
+                mid_top = eval(row['mid_top'])
+
+                x_coords = [bottom_left[0], bottom_right[0], mid_top[0], bottom_left[0]]
+                y_coords = [bottom_left[1], bottom_right[1], mid_top[1], bottom_left[1]]
+
+                trace_list.append(
+                    go.Scatter(
+                        x=x_coords,
+                        y=y_coords,
+                        fill="toself",
+                        fillcolor=color,
+                        line=dict(color=color, width=2),
+                        mode="lines",
+                        opacity=0.8,
+                        name=row["obstacle"].title(),
+                    )
+                )
+
+    # Add initial drone positions
     initial_frame_data = go.Scatter(
         x=df[df["episode_id"] == 0]["x_coord"],
         y=df[df["episode_id"] == 0]["y_coord"],
         mode="markers",
         marker=dict(color="white", symbol="arrow-wide", size=20, line=get_marker_line(df[df["episode_id"] == 0])),
         text=df[df['episode_id'] == 0].apply(lambda
-                                                 row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
-                                             axis=1),
+                                row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
+                            axis=1),
         hoverinfo='text',
         name="Drones"
     )
-
     # Define figure layout with the obstacles trace
     fig = go.Figure(
-        data=[obstacle_trace, initial_frame_data],
+        data=[*trace_list, initial_frame_data],  # Unpack trace_list and add initial drone positions
         layout=go.Layout(
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
             margin=dict(l=0, r=0, t=0, b=0),
             xaxis=dict(scaleanchor='y', constrain='domain', visible=False),
             yaxis=dict(scaleanchor='x', constrain='domain', visible=False),
+            font_color="white",
+            font_size=14
         )
     )
-
-    # Animation frames for each episode
+    # Add animation frames
     frames = []
     max_episode = df['episode_id'].max()
     for i in range(max_episode + 1):
@@ -207,25 +302,23 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
             x=frame_df["x_coord"],
             y=frame_df["y_coord"],
             mode="markers",
-            marker=dict(
-                color="white",
-                symbol="arrow-wide",
-                size=20,
-                line=get_marker_line(frame_df)  # Adjust line colors dynamically
-            ),
+            marker=dict(color="white",
+                        symbol="arrow-wide",
+                        size=20,
+                        line=get_marker_line(frame_df)
+                        ),
             text=frame_df.apply(lambda
                                     row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
                                 axis=1),
             hoverinfo='text',
             name="Drones"
         )
-        frames.append(go.Frame(data=[obstacle_trace, frame_data], name=str(i)))
-    fig.frames = frames
-    # Custom animation controls
-    fig.update_layout(
-        hoverdistance=10,
+        frames.append(go.Frame(data=[*trace_list, frame_data], name=str(i)))
 
-        showlegend=False,
+    fig.frames = frames
+
+    # Add play/pause controls
+    fig.update_layout(
         updatemenus=[{
             'x': 0.15,
             'y': -0.1,
@@ -240,28 +333,16 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
             'type': 'buttons',
             'showactive': False,
             'buttons': [
-                {
-                    'label': '▶',
-                    'method': 'animate',
-                    'args': [None, {
-                        'frame': {'duration': 100, 'redraw': False},
-                        'fromcurrent': True,
-                        'mode': 'immediate'
-                    }]
-                },
-                {
-                    'label': '▐▐',
-                    'method': 'animate',
-                    'args': [[None], {
+                {'label': '▶', 'method': 'animate', 'args': [None, {'frame': {'duration': 200, 'redraw': True}}]},
+                {'label': '▐▐', 'method': 'animate', 'args': [[None], {
                         'frame': {'duration': 0, 'redraw': False},
                         'mode': 'immediate'
-                    }]
-                }
+                    }]}  # Fix
             ]
         }],
         sliders=[{
             'tickcolor': "white",  # Tick mark color
-            'font': {'color':"white", 'size':8},
+            'font': {'color': "white", 'size': 8},
             'steps': [{
                 'args': [[str(i)], {
                     'frame': {'duration': 200, 'redraw': True},
@@ -271,46 +352,132 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
                 'method': 'animate'
             } for i in range(max_episode + 1)],
             'currentvalue': {'prefix': 'Episode: ',
-                "font": {"size": 10, "color": "white"}},
+                             "font": {"size": 10, "color": "white"}},
             'x': 0.20,
             'y': 0
         }]
     )
-
     return fig
 
 
+
 def static_scatterplot(df, obstacles):
-    # Prepare obstacle colors
-    obstacle_colors = ["rgb" + str(col.replace("[", "(").replace("]", ")")) for col in obstacles['obstacle_color']]
-
-    obstacle_opacity = [
-        0.0 if (row["obstacle"] == "fires" and row["point_type"] == "interior" or row["point_type"] == "midpoint") else 0.8
-        for i, row in obstacles.iterrows()
-    ]
-    # Static obstacle trace
-    obstacle_trace = go.Scatter(
-        x=obstacles['x_coord'],
-        y=obstacles['y_coord'],
-        mode="markers",
-        marker=dict(size=8, color=obstacle_colors, opacity=obstacle_opacity),
-        name="Obstacles",
-        hoverinfo='text',
-        text=obstacles.apply(lambda row: f"<b>Obstacle ID</b>: {row['obstacle_id']}<br>"
-                                         f"<b>Obstacle Type</b>: {row['obstacle']}<br>"
-                                         f"<b>X-Coord</b>: {row['x_coord']}<br>"
-                                         f"<b>Y-Coord</b>: {row['y_coord']}<br>"
-                                         f"<b>Obstacle Risk</b>: {row['obstacle_risk']}", axis=1)
-    )
-
-    # Function to dynamically set marker borders
     def get_marker_line(df_subset):
         return dict(
             color=["red" if collision > 0 else "black" for collision in df_subset['drone_collisions']],
-            width=2  # Border width
+            width=2
         )
 
-    # Display drone positions for the final episode
+    # Create the figure
+    fig = go.Figure()
+    print("Swarm Visualization")
+    trace_list = []
+    # Plot static obstacles
+    if obstacles is not None and not obstacles.empty and isinstance(obstacles, pd.DataFrame):
+        for _, row in obstacles.iterrows():
+            color = f"rgb{row['obstacle_color'].replace('[', '(').replace(']', ')')}"
+            print(f"Processed Color: {color} for Obstacle: {row['obstacle_shape']}")
+            shape_type = row['obstacle_shape']
+            x_center = row['midpoint_x_coord']
+            y_center = row['midpoint_y_coord']
+
+
+            if shape_type == 'rect':
+                bottom_left = eval(row['bottom_left'])
+                top_right = eval(row['top_right'])
+
+                x0, y0 = bottom_left
+                x1, y1 = top_right
+
+                if row["obstacle"] == "no-fly":
+                    trace_list.append(
+                        go.Scatter(
+                            x=[x0, x1, x1, x0, x0],
+                            y=[y0, y0, y1, y1, y0],
+                            fill="toself",
+                            fillcolor=color,
+                            line=dict(color=color, width=2),
+                            mode="lines",
+                            opacity=0.1,
+                            name=row["obstacle"].title(),
+                        )
+                    )
+                else:
+                    trace_list.append(
+                        go.Scatter(
+                            x=[x0, x1, x1, x0, x0],
+                            y=[y0, y0, y1, y1, y0],
+                            fill="toself",
+                            fillcolor=color,
+                            line=dict(color=color, width=2),
+                            mode="lines",
+                            opacity=0.8,
+                            name=row["obstacle"].title(),
+                        )
+                    )
+
+            elif shape_type == 'circle':
+                top_right = eval(row['top_right'])
+                bottom_left = eval(row['bottom_left'])
+                x0, y0 = bottom_left
+                x1, y1 = top_right
+
+                radius = (x1 - x0)/2
+
+                # Circle traces need to be approximated using Scatter
+                circle_x = [x_center + radius * np.cos(theta) for theta in np.linspace(0, 2 * np.pi, 100)]
+                circle_y = [y_center + radius * np.sin(theta) for theta in np.linspace(0, 2 * np.pi, 100)]
+
+                if row["obstacle"] == "fires":
+                    trace_list.append(
+                        go.Scatter(
+                            x=circle_x,
+                            y=circle_y,
+                            line=dict(color=color, width=2, dash="dash"),
+                            mode="lines",
+                            opacity=0.8,
+                            name=row["obstacle"].title(),
+                            showlegend=True,
+                        )
+                    )
+                else:
+                    trace_list.append(
+                        go.Scatter(
+                            x=circle_x,
+                            y=circle_y,
+                            fill="toself",
+                            fillcolor=color,
+                            line=dict(color=color, width=2),
+                            mode="lines",
+                            opacity=0.8,
+                            name=row["obstacle"].title(),
+                            showlegend=True,
+                        )
+                    )
+
+
+            elif shape_type == 'polygon':
+                bottom_left = eval(row['bottom_left'])
+                bottom_right = eval(row['bottom_right'])
+                mid_top = eval(row['mid_top'])
+
+                x_coords = [bottom_left[0], bottom_right[0], mid_top[0], bottom_left[0]]
+                y_coords = [bottom_left[1], bottom_right[1], mid_top[1], bottom_left[1]]
+
+                trace_list.append(
+                    go.Scatter(
+                        x=x_coords,
+                        y=y_coords,
+                        fill="toself",
+                        fillcolor=color,
+                        line=dict(color=color, width=2),
+                        mode="lines",
+                        opacity=0.8,
+                        name=row["obstacle"].title(),
+                        showlegend=True,
+                    )
+                )
+    # Plot drones for the final episode
     final_episode = df['episode_id'].max()
     final_df = df[df["episode_id"] == final_episode]
 
@@ -318,30 +485,25 @@ def static_scatterplot(df, obstacles):
         x=final_df["x_coord"],
         y=final_df["y_coord"],
         mode="markers",
-        marker=dict(
-            color="white",
-            symbol="arrow-wide",
-            size=20,
-            line=get_marker_line(final_df)  # Adjust line color dynamically
-        ),
-        text=final_df.apply(lambda
-                                row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
-                            axis=1),
+        marker=dict(color="white", symbol="arrow-wide", size=20, line=get_marker_line(final_df)),
         hoverinfo='text',
-        name="Drones"
+        text=final_df.apply(lambda
+                                                 row: f"<b>Drone ID</b>: {round(row['drone_id']):.2f},<br> <b>X</b>: {row['x_coord']:.2f},<br> <b>Y</b>: {row['y_coord']:.2f},<br> <b>Orientation</b>: {row['orientation']:.2f},<br> <b>Linear Velocity</b>: {row['linear_velocity']:.2f},<br> <b>Angular Velocity</b>: {row['angular_velocity']:.2f},<br> <b>Improvement Multiplier</b>: {row['improvement_multiplier']:.2f}",
+                                             axis=1),
+        name="Drones",
+        showlegend=True,
     )
-
-    # Create the figure
+    # Define figure layout with the obstacles trace
     fig = go.Figure(
-        data=[obstacle_trace, drone_trace],
+        data=[*trace_list, drone_trace],  # Unpack trace_list and add initial drone positions
         layout=go.Layout(
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
             margin=dict(l=0, r=0, t=0, b=0),
             xaxis=dict(scaleanchor='y', constrain='domain', visible=False),
             yaxis=dict(scaleanchor='x', constrain='domain', visible=False),
-            hoverdistance=10,
-            showlegend=False
+            font_color="white",
+            font_size=14
         )
     )
 

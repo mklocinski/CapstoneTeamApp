@@ -61,10 +61,10 @@ def reward_trend_viewer(reward_data):
     fig.update_layout(
         paper_bgcolor='rgb(0,0,0,0)',
         plot_bgcolor='rgb(0,0,0,0)',
-        font=dict(size=7, color='white'),
+        font=dict(size=14, color='white'),
         margin=dict(l=20, r=10, t=40, b=20),
         xaxis_title="Episode",
-        yaxis_title="Reward"
+        yaxis_title="Reward",
     )
     fig.update_annotations(font_size=10)
     fig.update_yaxes(showgrid=False, zeroline=False)
