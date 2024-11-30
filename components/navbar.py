@@ -123,13 +123,19 @@ make_navbar = dbc.Navbar(
                                 n_clicks=0,
                                 children=["▐▐"],
                                 className="player-buttons",
-                                id="pause-model-button")])
+                                id="pause-model-button"),
+                            dbc.Button(
+                                n_clicks=0,
+                                children=["■"],
+                                className="player-buttons",
+                                id="stop-model-button")])
                     ], width=1),
                     dbc.Col(children=[
                         html.Div(children=[
                          standard_run_status,
                         html.Div(id="output-helper"),
                         html.Div(id="output-helper2"),
+                        html.Div(id="output-helper3"),
                         html.Div(id="run-progress-placeholder"),
                         html.Div(id="db-poller"),
                         dcc.Interval(
@@ -239,6 +245,20 @@ def pause_live_model(clicks, url):
         if response.status_code == 200:
             return ""
 
+
+@callback(
+    Output(component_id="output-helper3", component_property='children'),
+    Input('stop-model-button', 'n_clicks'),
+    State('api_url', 'data')
+)
+def play_live_model(clicks, url):
+    if clicks:
+        print("Stop button clicked")
+        call = url['api_url']
+        print(f'{call}/model/stop')
+        response = requests.get(f'{call}/model/stop')
+        if response.status_code == 200:
+            return ""
 
 @callback(
     Output(component_id="output-helper2", component_property='children'),
