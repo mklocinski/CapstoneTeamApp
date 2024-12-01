@@ -6,7 +6,7 @@ import requests
 
 
 def make_status_icon(status):
-    if status == "idle":
+    if status == "idle" or status == "stop":
         return html.Div(children=[html.I(id='idle',
                                          className="bi bi-question-octagon-fill",
                                          style={'color': 'gray',
@@ -71,7 +71,7 @@ standard_run_status = html.Div(children=[
                                className='model-loading-div'),
                             dcc.Interval(
                                     id="status-interval",
-                                    interval=4*1000,
+                                    interval=2*1000,
                                     n_intervals=0,
                                     disabled=True
                                 )])
@@ -140,7 +140,7 @@ make_navbar = dbc.Navbar(
                         html.Div(id="db-poller"),
                         dcc.Interval(
                                     id="db-interval",
-                                    interval=500,
+                                    interval=1000,
                                     n_intervals=0,
                                     disabled=True
                                 )
@@ -253,12 +253,25 @@ def pause_live_model(clicks, url):
 )
 def stop_live_model(clicks, url):
     if clicks:
-        print("Stop button clicked")
+        print("Stop button clicked.")
         call = url['api_url']
-        print(f'{call}/model/stop')
-        response = requests.get(f'{call}/model/stop')
-        if response.status_code == 200:
-            return ""
+        print(f"API URL: {call}")
+
+        try:
+            response = requests.get(f'{call}/model/stop')
+            print(f"Stop Endpoint Response: {response.status_code} - {response.text}")
+
+            commit = requests.get(f'{call}/database/commit')
+            print(f"Commit Endpoint Response: {commit.status_code} - {commit.text}")
+
+            if response.status_code == 200:
+                return ""
+            else:
+                return f"Error: {response.text}"
+        except Exception as e:
+            print(f"Error in callback: {str(e)}")
+            return f"Callback Error: {str(e)}"
+    return ""
 
 @callback(
     Output(component_id="output-helper2", component_property='children'),
