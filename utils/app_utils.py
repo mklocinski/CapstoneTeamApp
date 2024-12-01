@@ -40,7 +40,9 @@ def map_param_conversion(map_params):
         if key not in converted_dict:
             converted_dict[key] = {}
         for param, val in map_params[key].items():
-            if "number_of_" in param:
+            if key == "target":
+                converted_dict[key] = values
+            elif "number_of_" in param:
                 converted_dict[key]["count"] = val
             elif "random_" in param:
                 converted_dict[key]["random"] = val

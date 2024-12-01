@@ -251,7 +251,7 @@ def pause_live_model(clicks, url):
     Input('stop-model-button', 'n_clicks'),
     State('api_url', 'data')
 )
-def play_live_model(clicks, url):
+def stop_live_model(clicks, url):
     if clicks:
         print("Stop button clicked")
         call = url['api_url']
@@ -341,7 +341,7 @@ def update_current_status(n_intervals, url):
         print(f"Status: {status}")
         return make_status_icon(status)
     else:
-        return "--", {"run-status":"off"}
+        return "--", {"run-status":"running"}
 
 
 @callback(Output("run-progress-text", "children", allow_duplicate=True),

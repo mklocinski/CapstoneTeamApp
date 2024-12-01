@@ -87,8 +87,9 @@ collapsible_sidebar_layout = html.Div(
               swarm_params_menu,
               drl_params_button,
               drl_params_menu,
-              chat_params_button,
-              chat_params_menu])
+              #chat_params_button,
+              #chat_params_menu
+              ])
 
 
 @callback(

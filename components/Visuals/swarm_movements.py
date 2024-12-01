@@ -175,7 +175,17 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
             y_center = row['midpoint_y_coord']
 
 
-            if shape_type == 'rect':
+            if shape_type == 'point':
+                trace_list.append(
+                    go.Scatter(
+                        x=[x_center],
+                        y=[y_center],
+                        mode="markers",
+                        marker=dict(color="white", symbol="x", size=20),
+                        name=row["obstacle"].title(),
+                    )
+                )
+            elif shape_type == 'rect':
                 bottom_left = eval(row['bottom_left'])
                 top_right = eval(row['top_right'])
 
@@ -382,7 +392,17 @@ def static_scatterplot(df, obstacles):
             y_center = row['midpoint_y_coord']
 
 
-            if shape_type == 'rect':
+            if shape_type == 'point':
+                trace_list.append(
+                    go.Scatter(
+                        x=[x_center],
+                        y=[y_center],
+                        mode="markers",
+                        marker=dict(color="white", symbol="x", size=20),
+                        name=row["obstacle"].title(),
+                    )
+                )
+            elif shape_type == 'rect':
                 bottom_left = eval(row['bottom_left'])
                 top_right = eval(row['top_right'])
 
