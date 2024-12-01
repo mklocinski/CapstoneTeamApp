@@ -85,7 +85,7 @@ current_episode = html.Div(children=[
                                      className="kpi-value"),
                             dcc.Interval(
                                     id="episode-interval",
-                                    interval=2*1000,
+                                    interval=500,
                                     n_intervals=0,
                                     disabled=True
                                 )
