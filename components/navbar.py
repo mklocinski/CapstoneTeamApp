@@ -140,7 +140,7 @@ make_navbar = dbc.Navbar(
                         html.Div(id="db-poller"),
                         dcc.Interval(
                                     id="db-interval",
-                                    interval=1000,
+                                    interval=3000,
                                     n_intervals=0,
                                     disabled=True
                                 )
