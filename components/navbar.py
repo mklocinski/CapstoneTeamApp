@@ -71,7 +71,7 @@ standard_run_status = html.Div(children=[
                                className='model-loading-div'),
                             dcc.Interval(
                                     id="status-interval",
-                                    interval=2*1000,
+                                    interval=2000,
                                     n_intervals=0,
                                     disabled=True
                                 )])
@@ -140,7 +140,7 @@ make_navbar = dbc.Navbar(
                         html.Div(id="db-poller"),
                         dcc.Interval(
                                     id="db-interval",
-                                    interval=3000,
+                                    interval=5000,
                                     n_intervals=0,
                                     disabled=True
                                 )
