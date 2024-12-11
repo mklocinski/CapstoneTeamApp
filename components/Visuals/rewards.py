@@ -4,7 +4,7 @@ from plotly.subplots import make_subplots
 import plotly.express as px
 
 def reward_trend_viewer(reward_data):
-
+    reward_data = reward_data.sort_values(by='episode_id')
     # Identify improvement periods for shading
     #rew_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["reward"] > reward_data["reward"][i-1]]
     # dist_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["direction_reward"] > reward_data["direction_reward"][i-1]]

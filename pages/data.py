@@ -96,6 +96,8 @@ def load_table(n_clicks, value, url):
             descriptions = {old_new[old]:desc for old, desc in get_tbl_col_def(value).items()}
             df.columns = formatted
             print(f"Fetched {len(df)} rows from the database")
+            if "episode_id" in df.columns:
+                df = df.sort_values(by="episode_id")
             columns = []
             for i, x in enumerate(df.columns):
                 columns.append({'name': formatted[i],
