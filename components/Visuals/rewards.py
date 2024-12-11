@@ -6,7 +6,7 @@ import plotly.express as px
 def reward_trend_viewer(reward_data):
 
     # Identify improvement periods for shading
-    rew_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["reward"] > reward_data["reward"][i-1]]
+    #rew_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["reward"] > reward_data["reward"][i-1]]
     # dist_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["direction_reward"] > reward_data["direction_reward"][i-1]]
     # target_dist_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["target_distance_reward"] > reward_data["target_distance_reward"][i-1]]
 
@@ -20,15 +20,15 @@ def reward_trend_viewer(reward_data):
     fig1 = px.line(reward_data, x='episode_id', y='reward', color_discrete_sequence=["white"])
     for trace in fig1.data:
         fig.add_trace(trace, row=1, col=1)
-    for period in rew_improvements:
-        fig.add_shape(
-                type="rect",
-                x0=period[0], x1=period[1],
-                y0=min(reward_data['reward']), y1=max(reward_data['reward']),
-                fillcolor="rgba(255, 255, 255, 0.2)",
-                line_width=0,
-                row=1, col=1
-            )
+    # for period in rew_improvements:
+    #     fig.add_shape(
+    #             type="rect",
+    #             x0=period[0], x1=period[1],
+    #             y0=min(reward_data['reward']), y1=max(reward_data['reward']),
+    #             fillcolor="rgba(255, 255, 255, 0.2)",
+    #             line_width=0,
+    #             row=1, col=1
+    #         )
 
     # Create and add traces for collisions
     fig2 = px.line(reward_data, x='episode_id', y='all_collisions', color_discrete_sequence=["white"])
