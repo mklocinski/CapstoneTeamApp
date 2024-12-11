@@ -14,7 +14,7 @@ def reward_trend_viewer(reward_data):
     fig = make_subplots(rows=2, cols=1,
                         row_heights=[0.6, 0.4],
                         vertical_spacing=0.1,
-                        subplot_titles=["Total Rewards = - Average Direction - Average Drone-Target Distance - RAI term (if RAI parameters selected)", "Collisions"])
+                        subplot_titles=["Total Rewards", "Collisions"])
 
     # Create and add traces for rewards
     fig1 = px.line(reward_data, x='episode_id', y='reward', color_discrete_sequence=["white"])
