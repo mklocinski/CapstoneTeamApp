@@ -71,7 +71,7 @@ standard_run_status = html.Div(children=[
                                className='model-loading-div'),
                             dcc.Interval(
                                     id="status-interval",
-                                    interval=2000,
+                                    interval=5000,
                                     n_intervals=0,
                                     disabled=True
                                 )])
@@ -85,7 +85,7 @@ current_episode = html.Div(children=[
                                      className="kpi-value"),
                             dcc.Interval(
                                     id="episode-interval",
-                                    interval=2000,
+                                    interval=4000,
                                     n_intervals=0,
                                     disabled=True
                                 )
@@ -140,7 +140,7 @@ make_navbar = dbc.Navbar(
                         html.Div(id="db-poller"),
                         dcc.Interval(
                                     id="db-interval",
-                                    interval=5000,
+                                    interval=6000,
                                     n_intervals=0,
                                     disabled=True
                                 )
@@ -307,37 +307,37 @@ def update_current_step(n_intervals, url, status):
             return "0"
 
 
-@callback(
-    [Output("db-poller", "children"),
-     Output("damaged-drone-count", "children"),
-     Output("total-damage-sum", "children")],
-    Input("db-interval", "n_intervals"),
-    State("api_url", "data"),
-    State("model-run-status", "data")
-)
-def commit_db(n_intervals, url, status):
-    response = requests.get(f"{url['api_url']}/database/commit")
-    print(status)
-    print(f"{url['api_url']}/database/commit")
-    print(response)
-    r_damage_count = requests.get(f"{url['api_url']}/database/last_run/drone_damage_count")
-    r_total_damage = requests.get(f"{url['api_url']}/database/last_run/total_drone_damage")
-    if status == "running":
-        if r_damage_count.status_code == 200:
-            damage_count = r_damage_count.json().get("unique_drones_with_damage")
-        else:
-            damage_count = "0"
-
-        if r_total_damage.status_code == 200:
-            total_damage = r_total_damage.json().get("total_drone_damage")
-
-        else:
-            total_damage = "0"
-
-        return "", damage_count, total_damage
-    else:
-        return "", "0", "0"
-
+# @callback(
+#     [Output("db-poller", "children"),
+#      Output("damaged-drone-count", "children"),
+#      Output("total-damage-sum", "children")],
+#     Input("db-interval", "n_intervals"),
+#     State("api_url", "data"),
+#     State("model-run-status", "data")
+# )
+# def commit_db(n_intervals, url, status):
+#     response = requests.get(f"{url['api_url']}/database/commit")
+#     print(status)
+#     print(f"{url['api_url']}/database/commit")
+#     print(response)
+#     r_damage_count = requests.get(f"{url['api_url']}/database/last_run/drone_damage_count")
+#     r_total_damage = requests.get(f"{url['api_url']}/database/last_run/total_drone_damage")
+#     if status == "running":
+#         if r_damage_count.status_code == 200:
+#             damage_count = r_damage_count.json().get("unique_drones_with_damage")
+#         else:
+#             damage_count = "0"
+#
+#         if r_total_damage.status_code == 200:
+#             total_damage = r_total_damage.json().get("total_drone_damage")
+#
+#         else:
+#             total_damage = "0"
+#
+#         return "", damage_count, total_damage
+#     else:
+#         return "", "0", "0"
+#
 
 @callback(
     Output("run-progress-text", "children"),

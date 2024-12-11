@@ -10,10 +10,10 @@ import pandas as pd
 tabs = html.Div(
             className= "swarm-viewer-tab-area",
             children=[
-                dcc.Interval(id='tab-1-interval', interval=1000, n_intervals=0, disabled=False),
-                dcc.Interval(id='tab-2-interval', interval=1000, n_intervals=0, disabled=True),
-                dcc.Interval(id='tab-3-interval', interval=1000, n_intervals=0, disabled=False),
-                dcc.Interval(id='tab-4-interval', interval=1000, n_intervals=0, disabled=False),
+                dcc.Interval(id='tab-1-interval', interval=10000, n_intervals=0, disabled=False),
+                dcc.Interval(id='tab-2-interval', interval=10000, n_intervals=0, disabled=False),
+                # dcc.Interval(id='tab-3-interval', interval=5000, n_intervals=0, disabled=False),
+                # dcc.Interval(id='tab-4-interval', interval=5000, n_intervals=0, disabled=False),
                 dbc.Tabs([
                         dbc.Tab(label="Rewards", tab_id="tab-1", className="dash-tabs"),
                         dbc.Tab(label="Swarm View",tab_id='tab-2',className= "dash-tabs"),
@@ -31,9 +31,7 @@ tabs = html.Div(
 
 @callback(
     [Output('tab-1-interval', 'disabled'),
-     Output('tab-2-interval', 'disabled'),
-     Output('tab-3-interval', 'disabled'),
-     Output('tab-4-interval', 'disabled')],
+     Output('tab-2-interval', 'disabled')],
     [Input("tabs", "active_tab"),
      Input("model-run-status", "data")]
 )
@@ -42,11 +40,10 @@ def update_intervals(active_tab, model_status):
         return [
             active_tab != "tab-1",
             active_tab != "tab-2",
-            active_tab != "tab-3",
-            active_tab != "tab-4"
+
         ]
     else:
-        return True, True, True, True
+        return True, True
 
 
 @callback(
@@ -104,19 +101,21 @@ def tab_content(tab, url):
           State("model-run-status", "data"),
           State("current-episode-value", "children"))
 def update_tab_1(n_interval, url, status, episode):
-    if status["run-status"] == "running" and int(episode) >= 10:
-        call = url['api_url']
-        response = requests.get(f'{call}/database/last_run/tbl_rewards')
-        if response.status_code == 200:
-            data = response.json()
-            df = pd.DataFrame(data)
-            new_cols = [col[5:] for col in df.columns]
-            df.columns = new_cols
-            return rewards.reward_trend_viewer(df), {'display' : 'inline'}
-        else:
-            return f"Error: {response.content.decode()}", {'display' : 'inline'}
+    print("Loading Rewards Graph")
+    call = url['api_url']
+    print(f'{call}/database/last_run/tbl_rewards')
+    response = requests.get(f'{call}/database/last_run/tbl_rewards')
+    print(f"Request Status: {response.status_code}")
+    if response.status_code == 200:
+        data = response.json()
+        df = pd.DataFrame(data)
+        print(f"Number of rows in reward data: {len(df)}")
+        new_cols = [col[5:] for col in df.columns]
+        print(new_cols)
+        df.columns = new_cols
+        return rewards.reward_trend_viewer(df), {'display': 'inline'}
     else:
-        return go.Figure(), {'display': 'none'}
+        return f"Error: {response.content.decode()}", {'display': 'none'}
 
 
 
@@ -125,11 +124,11 @@ def update_tab_1(n_interval, url, status, episode):
     Output(component_id="drone-traj-plot", component_property="figure"),
     Output("drone-traj-plot", "style"),
     Input(component_id="drone-traj-dropdown-filter", component_property="value"),
-    Input("tab-3-interval", "n_intervals"),
+    #Input("tab-3-interval", "n_intervals"),
     State("api_url", "data"),
     State(component_id="hidden", component_property="children")
 )
-def update_tab_3(fltr, n_intervals, url, json_df):
+def update_tab_3(fltr, url, json_df):
     call = url['api_url']
     response = requests.get(f'{call}/database/last_run/tbl_local_state')
     if response.status_code == 200:
@@ -149,32 +148,32 @@ def update_tab_3(fltr, n_intervals, url, json_df):
         return f"Error: {response.content.decode()}", {'display' : 'inline'}
 
 
-@callback(Output("static-swarm-movement-plot", "figure"),
-          Output("static-swarm-movement-plot", "style"),
-          Input("tab-2-interval", "n_intervals"),
-          State("api_url", "data"),
-          State("model-run-status", "data"))
-def update_tab_2(n_interval, url, status):
-    call = url['api_url']
-    response1 = requests.get(f'{call}/database/last_run/tbl_local_state')
-    response2 = requests.get(f'{call}/database/last_run/tbl_map_data')
-    print(f"Local Data: {response1.status_code}, Map Data: {response2.status_code}")
-    if response1.status_code == 200 and response2.status_code == 200:
-        data = response1.json()
-        df = pd.DataFrame(data)
-        new_cols = [col[5:] for col in df.columns]
-        df.columns = new_cols
-        map_data = response2.json()
-        map_df = pd.DataFrame(map_data)
-        new_cols = [col[5:] for col in map_df.columns]
-        map_df.columns = new_cols
-        return swarm_movements.static_scatterplot(df, map_df), {'display' : 'inline'}
-    elif response1.status_code == 200 and response2.status_code != 200:
-        data = response1.json()
-        df = pd.DataFrame(data)
-        new_cols = [col[5:] for col in df.columns]
-        df.columns = new_cols
-        map_df = None
-        return swarm_movements.static_scatterplot(df, map_df), {'display' : 'inline'}
-    else:
-        f"Error: {response1.content.decode()}", {'display' : 'inline'}
+# @callback(Output("static-swarm-movement-plot", "figure"),
+#           Output("static-swarm-movement-plot", "style"),
+#           Input("tab-2-interval", "n_intervals"),
+#           State("api_url", "data"),
+#           State("model-run-status", "data"))
+# def update_tab_2(n_interval, url, status):
+#     call = url['api_url']
+#     response1 = requests.get(f'{call}/database/last_run/tbl_local_state')
+#     response2 = requests.get(f'{call}/database/last_run/tbl_map_data')
+#     print(f"Local Data: {response1.status_code}, Map Data: {response2.status_code}")
+#     if response1.status_code == 200 and response2.status_code == 200:
+#         data = response1.json()
+#         df = pd.DataFrame(data)
+#         new_cols = [col[5:] for col in df.columns]
+#         df.columns = new_cols
+#         map_data = response2.json()
+#         map_df = pd.DataFrame(map_data)
+#         new_cols = [col[5:] for col in map_df.columns]
+#         map_df.columns = new_cols
+#         return swarm_movements.static_scatterplot(df, map_df), {'display' : 'inline'}
+#     elif response1.status_code == 200 and response2.status_code != 200:
+#         data = response1.json()
+#         df = pd.DataFrame(data)
+#         new_cols = [col[5:] for col in df.columns]
+#         df.columns = new_cols
+#         map_df = None
+#         return swarm_movements.static_scatterplot(df, map_df), {'display' : 'inline'}
+#     else:
+#         return f"Error: {response1.content.decode()}", {'display' : 'inline'}

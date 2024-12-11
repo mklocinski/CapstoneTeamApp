@@ -167,6 +167,7 @@ def swarm_scatterplot_with_obstacles(df, obstacles):
     print("Swarm Visualization")
     # Plot static obstacles
     if obstacles is not None and not obstacles.empty and isinstance(obstacles, pd.DataFrame):
+        obstacles = obstacles.drop('', axis=1).drop_duplicates()
         for _, row in obstacles.iterrows():
             color = f"rgb{row['obstacle_color'].replace('[', '(').replace(']', ')')}"
             print(f"Processed Color: {color} for Obstacle: {row['obstacle_shape']}")
@@ -384,6 +385,7 @@ def static_scatterplot(df, obstacles):
     trace_list = []
     # Plot static obstacles
     if obstacles is not None and not obstacles.empty and isinstance(obstacles, pd.DataFrame):
+        obstacles = obstacles.drop('', axis=1).drop_duplicates()
         for _, row in obstacles.iterrows():
             color = f"rgb{row['obstacle_color'].replace('[', '(').replace(']', ')')}"
             print(f"Processed Color: {color} for Obstacle: {row['obstacle_shape']}")
@@ -534,8 +536,13 @@ def swarm_scatterplot_with_obstacles2(df, obstacle_df):
     # Initialize figure
     fig = go.Figure()
 
-    # Add obstacle shapes
+    # Add obstacle shape
+    obstacle_df.drop('id', axis=1, inplace=True)
+    obstacle_df = obstacle_df.drop_duplicates()
+
+
     for obstacle_id, group in obstacle_df.groupby("obstacle_id"):
+        obstacle_df = obstacle_df.drop('id', axis=1).drop_duplicates()
         # Get color for this obstacle (converting from list format)
         color = obstacle_df.loc[obstacle_df['obstacle_id'] == obstacle_id, 'obstacle_color'].iloc[0]
         color_rgb = "rgb" + color.replace("[", "(").replace("]", ")")

@@ -119,8 +119,8 @@ def create_user_inputs(param_type,
             el = html.Div(
                  children=[
                     html.P(title, className=class_name),
-                    dcc.Dropdown(id=p_id,
-                                 options=[{"label": val, "value": val} for val in vals],
+                    dcc.Input(id=p_id,
+                                 #options=[{"label": val, "value": val} for val in vals],
                                  value=vals.iloc[0] if "[" in vals else vals,
                               disabled=disabled)
                  ])
@@ -133,15 +133,16 @@ def create_user_inputs(param_type,
                 value_list[row["Parameter Code"]] = row["Default Value"]
 
         elif d_type == 'bool':
+            val = 1 if row["Default Value"] == "True" else 0
             if disabled:
-                opts = [{"label": title, "value": row["Default Value"], 'disabled':True}]
+                opts = [{"label": title, "value": val, 'disabled':True}]
             else:
-                opts = [{"label": title, "value": row["Default Value"]}]
+                opts = [{"label": title, "value": val}]
             el = html.Div(
                  children=[
                         dbc.Checklist(id=p_id,
                                 options=opts,
-                                 value=[row["Default Value"]],
+                                 value=[val],
                                  switch=True,
                               )
                  ])
@@ -153,6 +154,5 @@ def create_user_inputs(param_type,
             else:
                 value_list[row["Parameter Code"]] = row["Default Value"]
     vals = value_list if row["Parameter Type"] != "Map" else map_param_conversion(value_list)
-    print(vals)
     return {'values': vals, 'elements': element_list}
 
