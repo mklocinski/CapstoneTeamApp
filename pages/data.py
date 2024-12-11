@@ -89,6 +89,8 @@ def load_table(n_clicks, value, url):
             data = response.json()
             df = pd.DataFrame(data)
             df = df[reorder_tbl(value)]
+            if "cint_episode_id" in df.columns:
+                df = df.sort_values(by="cint_episode_id")
             dtypes = [dt_data_type(col) for col in df.columns]
             unprefix = [col[5:] if col != "id" else col for col in df.columns]
             formatted = [col.replace("_"," ").title() for col in unprefix]
@@ -96,8 +98,7 @@ def load_table(n_clicks, value, url):
             descriptions = {old_new[old]:desc for old, desc in get_tbl_col_def(value).items()}
             df.columns = formatted
             print(f"Fetched {len(df)} rows from the database")
-            if "episode_id" in df.columns:
-                df = df.sort_values(by="episode_id")
+
             columns = []
             for i, x in enumerate(df.columns):
                 columns.append({'name': formatted[i],

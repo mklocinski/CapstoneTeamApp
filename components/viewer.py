@@ -148,32 +148,32 @@ def update_tab_3(fltr, url, json_df):
         return f"Error: {response.content.decode()}", {'display' : 'inline'}
 
 
-# @callback(Output("static-swarm-movement-plot", "figure"),
-#           Output("static-swarm-movement-plot", "style"),
-#           Input("tab-2-interval", "n_intervals"),
-#           State("api_url", "data"),
-#           State("model-run-status", "data"))
-# def update_tab_2(n_interval, url, status):
-#     call = url['api_url']
-#     response1 = requests.get(f'{call}/database/last_run/tbl_local_state')
-#     response2 = requests.get(f'{call}/database/last_run/tbl_map_data')
-#     print(f"Local Data: {response1.status_code}, Map Data: {response2.status_code}")
-#     if response1.status_code == 200 and response2.status_code == 200:
-#         data = response1.json()
-#         df = pd.DataFrame(data)
-#         new_cols = [col[5:] for col in df.columns]
-#         df.columns = new_cols
-#         map_data = response2.json()
-#         map_df = pd.DataFrame(map_data)
-#         new_cols = [col[5:] for col in map_df.columns]
-#         map_df.columns = new_cols
-#         return swarm_movements.static_scatterplot(df, map_df), {'display' : 'inline'}
-#     elif response1.status_code == 200 and response2.status_code != 200:
-#         data = response1.json()
-#         df = pd.DataFrame(data)
-#         new_cols = [col[5:] for col in df.columns]
-#         df.columns = new_cols
-#         map_df = None
-#         return swarm_movements.static_scatterplot(df, map_df), {'display' : 'inline'}
-#     else:
-#         return f"Error: {response1.content.decode()}", {'display' : 'inline'}
+@callback(Output("static-swarm-movement-plot", "figure"),
+          Output("static-swarm-movement-plot", "style"),
+          Input("tab-2-interval", "n_intervals"),
+          State("api_url", "data"),
+          State("model-run-status", "data"))
+def update_tab_2(n_interval, url, status):
+    call = url['api_url']
+    response1 = requests.get(f'{call}/database/last_run/tbl_local_state')
+    response2 = requests.get(f'{call}/database/last_run/tbl_map_data')
+    print(f"Local Data: {response1.status_code}, Map Data: {response2.status_code}")
+    if response1.status_code == 200 and response2.status_code == 200:
+        data = response1.json()
+        df = pd.DataFrame(data)
+        new_cols = [col[5:] for col in df.columns]
+        df.columns = new_cols
+        map_data = response2.json()
+        map_df = pd.DataFrame(map_data)
+        new_cols = [col[5:] for col in map_df.columns]
+        map_df.columns = new_cols
+        return swarm_movements.static_scatterplot(df, map_df), {'display' : 'inline'}
+    elif response1.status_code == 200 and response2.status_code != 200:
+        data = response1.json()
+        df = pd.DataFrame(data)
+        new_cols = [col[5:] for col in df.columns]
+        df.columns = new_cols
+        map_df = None
+        return swarm_movements.static_scatterplot(df, map_df), {'display' : 'inline'}
+    else:
+        return f"Error: {response1.content.decode()}", {'display' : 'inline'}
