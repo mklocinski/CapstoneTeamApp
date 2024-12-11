@@ -7,14 +7,14 @@ def reward_trend_viewer(reward_data):
 
     # Identify improvement periods for shading
     rew_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["reward"] > reward_data["reward"][i-1]]
-    dist_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["direction_reward"] > reward_data["direction_reward"][i-1]]
-    target_dist_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["target_distance_reward"] > reward_data["target_distance_reward"][i-1]]
+    # dist_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["direction_reward"] > reward_data["direction_reward"][i-1]]
+    # target_dist_improvements = [[reward_data["episode_id"][i-1], r["episode_id"]] for i, r in reward_data.iterrows() if i > 0 and r["target_distance_reward"] > reward_data["target_distance_reward"][i-1]]
 
     # Create a subplot figure
-    fig = make_subplots(rows=4, cols=1,
-                        row_heights=[0.4, 0.2, 0.2, 0.2],
+    fig = make_subplots(rows=2, cols=1,
+                        row_heights=[0.6, 0.4],
                         vertical_spacing=0.1,
-                        subplot_titles=["Total Rewards = - Average Direction - Average Drone-Target Distance - RAI term (if RAI parameters selected)", "Collisions", "Direction Reward", "Drone-Target Distance Reward"])
+                        subplot_titles=["Total Rewards = - Average Direction - Average Drone-Target Distance - RAI term (if RAI parameters selected)", "Collisions"])
 
     # Create and add traces for rewards
     fig1 = px.line(reward_data, x='episode_id', y='reward', color_discrete_sequence=["white"])
@@ -36,32 +36,32 @@ def reward_trend_viewer(reward_data):
         fig.add_trace(trace, row=2, col=1)
 
     # Create and add traces for direction rewards
-    fig3 = px.line(reward_data, x='episode_id', y='direction_reward', color_discrete_sequence=["white"])
-    for trace in fig3.data:
-        fig.add_trace(trace, row=3, col=1)
-    for period in dist_improvements:
-        fig.add_shape(
-            type="rect",
-            x0=period[0], x1=period[1],
-            y0=min(reward_data['direction_reward']), y1=max(reward_data['direction_reward']),
-            fillcolor="rgba(255, 255, 255, 0.2)",
-            line_width=0,
-            row=3, col=1
-        )
-
-    # Create and add traces for drone-target distance
-    fig4 = px.line(reward_data, x='episode_id', y='target_distance_reward', color_discrete_sequence=["white"])
-    for trace in fig4.data:
-        fig.add_trace(trace, row=4, col=1)
-    for period in target_dist_improvements:
-        fig.add_shape(
-            type="rect",
-            x0=period[0], x1=period[1],
-            y0=min(reward_data['target_distance_reward']), y1=max(reward_data['target_distance_reward']),
-            fillcolor="rgba(255, 255, 255, 0.2)",
-            line_width=0,
-            row=4, col=1
-        )
+    # fig3 = px.line(reward_data, x='episode_id', y='direction_reward', color_discrete_sequence=["white"])
+    # for trace in fig3.data:
+    #     fig.add_trace(trace, row=3, col=1)
+    # for period in dist_improvements:
+    #     fig.add_shape(
+    #         type="rect",
+    #         x0=period[0], x1=period[1],
+    #         y0=min(reward_data['direction_reward']), y1=max(reward_data['direction_reward']),
+    #         fillcolor="rgba(255, 255, 255, 0.2)",
+    #         line_width=0,
+    #         row=3, col=1
+    #     )
+    #
+    # # Create and add traces for drone-target distance
+    # fig4 = px.line(reward_data, x='episode_id', y='target_distance_reward', color_discrete_sequence=["white"])
+    # for trace in fig4.data:
+    #     fig.add_trace(trace, row=4, col=1)
+    # for period in target_dist_improvements:
+    #     fig.add_shape(
+    #         type="rect",
+    #         x0=period[0], x1=period[1],
+    #         y0=min(reward_data['target_distance_reward']), y1=max(reward_data['target_distance_reward']),
+    #         fillcolor="rgba(255, 255, 255, 0.2)",
+    #         line_width=0,
+    #         row=4, col=1
+    #     )
 
     # Customize layout for the subplot figure
     fig.update_layout(
