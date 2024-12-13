@@ -26,12 +26,12 @@ menu = html.Div(id="rai-menu",
 
 def adj_bool(item):
     if item == [1] or item == [0]:
-        if item[0] == 1:
+        if item[0] == 0:
             return True
         else:
             return False
     else:
-        return item
+        return False
 
 input_values = {key:Input(component_id=key, component_property="value") for key, val in element_values.items()}
 @callback(
@@ -44,9 +44,8 @@ input_values = {key:Input(component_id=key, component_property="value") for key,
 def update_rai_parameters(click, values, ids):
     if click:
         param_keys = list(element_values.keys())
-        print(param_keys)
-        values = [adj_bool(val) for val in values]
         parameters = {key: (False if val == [] else val) for key, val in zip(param_keys, values)}
-        print(parameters) # for debugging
+        parameters = {key:(adj_bool(val) if key in ["avoid_collisions", "avoid_buffer_zones"] else val) for key, val in parameters.items()}
+        print(parameters)
         return parameters
     return dash.no_update
