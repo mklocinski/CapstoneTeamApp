@@ -10,8 +10,8 @@ import pandas as pd
 tabs = html.Div(
             className= "swarm-viewer-tab-area",
             children=[
-                dcc.Interval(id='tab-1-interval', interval=10000, n_intervals=0, disabled=False),
-                dcc.Interval(id='tab-2-interval', interval=10000, n_intervals=0, disabled=False),
+                dcc.Interval(id='tab-1-interval', interval=3000, n_intervals=0, disabled=False),
+                dcc.Interval(id='tab-2-interval', interval=2000, n_intervals=0, disabled=False),
                 # dcc.Interval(id='tab-3-interval', interval=5000, n_intervals=0, disabled=False),
                 # dcc.Interval(id='tab-4-interval', interval=5000, n_intervals=0, disabled=False),
                 dbc.Tabs([
