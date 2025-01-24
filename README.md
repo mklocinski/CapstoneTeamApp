@@ -20,27 +20,4 @@
 **View detailed data:**
 ![Review data](assets/images/dataview.gif)
 
-# Contents
-- [Project Description](#project-description)  
-    - [Background](#background)
-    - [App Description](#app-description)
-- [Authentication](#authentication)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [How to Download](#how-to-download)
-  - [How to Run](#how-to-run)
-- [Endpoints](#Endpoints)
-  - [Request Bodies](#request-bodies)
-- [Database](#database)
-- [Architecture](#architecture)
-- [Contributing](#contributing)
 
-## Project Description
-
-### Background
-
-### App Description
-
-### Getting Started
-
-#### Prerequisites
