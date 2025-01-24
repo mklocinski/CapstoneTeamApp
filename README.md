@@ -4,6 +4,22 @@
 - You **can't** run this without the [API]((https://github.com/mklocinski/CapstoneTeamAPI))
 - [Arrive here from a GMU SEOR Capstone Course?](#capstone-students)
 
+# Interface Overview
+**Select environment, RAI, and DRL parameters:**
+![Selecting Parameters](assets/images/parameters.gif)
+
+**Run model and view progress in real-time:**
+![Viewing Progress](assets/images/swarmview.gif)
+
+**Pause training for closer analysis:**
+![Pause and Review](assets/images/pause.gif)
+
+**Replay mission:**
+![Replay](assets/images/playback.gif)
+
+**View detailed data:**
+![Review data](assets/images/dataview.gif)
+
 # Contents
 - [Project Description](#project-description)  
     - [Background](#background)
