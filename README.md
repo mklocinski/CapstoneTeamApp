@@ -28,14 +28,3 @@
 ### Getting Started
 
 #### Prerequisites
-
-#### How to Download
-
-#### How to Run
-
-### Architecture
-
-### Contributing
-This repo will not be actively maintained, but you can reach out to me if you have any questions. 
-
-#### Capstone Students
